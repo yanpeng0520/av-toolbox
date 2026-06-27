@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+outputs/
+output/
+results/
+.git/
+.github/
+
+# Runtime/local assets are mounted when needed, not baked into the image.
+data_segments/
+data_samples/
+multicam_samples/
+testing/
+omni-video-pipeline/
+.codex/
+models/

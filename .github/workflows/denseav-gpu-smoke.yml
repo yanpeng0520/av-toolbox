@@ -1,0 +1,36 @@
+name: DenseAV GPU Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      cache_dir:
+        description: "Host cache directory containing weights/denseav_2head.ckpt"
+        required: false
+        default: "/home/runner/.cache/av_toolbox"
+      device:
+        description: "Torch device to use inside the container"
+        required: false
+        default: "cuda:0"
+
+jobs:
+  denseav-gpu-smoke:
+    name: DenseAV GPU smoke
+    runs-on: [self-hosted, linux, x64, gpu]
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check GPU
+        run: nvidia-smi
+
+      - name: Check DenseAV weights
+        run: test -f "${{ inputs.cache_dir }}/weights/denseav_2head.ckpt"
+
+      - name: Build DenseAV image
+        run: docker build -t av-toolbox:denseav-ci --build-arg INCLUDE_DENSEAV=1 .
+
+      - name: Run DenseAV smoke
+        run: |
+          docker run --rm --gpus all             -v "${{ inputs.cache_dir }}:/cache/av_toolbox:ro"             av-toolbox:denseav-ci             sh -lc "av-toolbox generate-demo-media --output-dir /tmp/av_toolbox_media --duration 4 --stem denseav_smoke && av-toolbox av denseav /tmp/av_toolbox_media/denseav_smoke.mp4 --output /tmp/av_toolbox_outputs --max-seconds 1 --sample-fps 1 --device '${{ inputs.device }}' --batch-size 1 --fp16 --no-overlay"

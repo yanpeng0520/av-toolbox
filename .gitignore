@@ -1,0 +1,44 @@
+# Python build/test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Local agent guidance/configuration.
+.codex/
+
+# Local secrets/environment files
+.env
+.env.*
+!.env.example
+omni-video-pipeline/.env
+omni-video-pipeline/.env.*
+!omni-video-pipeline/.env.example
+
+# Local environments
+.venv/
+venv/
+omni-video-pipeline/venv/
+
+# Generated analysis outputs
+outputs/
+output/
+results/
+testing/
+
+# Legacy migration source kept locally only.
+omni-video-pipeline/
+
+# Large local media/sample collections.
+data_samples/
+multicam_samples/
+data_segments/*
+!data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4
+
+# Large local assets and model weights should live outside package contents.
+# Keep small demo media only when intentionally curated.
+models/
+!models/.gitkeep

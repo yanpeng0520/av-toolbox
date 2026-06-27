@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "av-toolbox"
+version = "0.1.0"
+description = "Installable audio, video, and audio-visual analysis toolbox"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+video = [
+    "numpy>=1.24",
+    "opencv-python-headless>=4.8",
+]
+audio = [
+    "librosa>=0.10",
+    "soundfile>=0.12",
+]
+av = [
+    "av>=12.0",
+]
+torch = [
+    "torch>=2.0",
+    "torchvision>=0.15",
+    "torchaudio>=2.0",
+]
+denseav = [
+    "av>=12.0",
+    "pillow>=9.0",
+    "torch>=2.0",
+    "torchvision>=0.15",
+    "torchaudio>=2.0",
+    "denseav @ git+https://github.com/mhamilton723/DenseAV.git",
+]
+web = [
+    "streamlit>=1.35",
+]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1",
+]
+all = [
+    "numpy>=1.24",
+    "opencv-python-headless>=4.8",
+    "librosa>=0.10",
+    "soundfile>=0.12",
+    "av>=12.0",
+    "pillow>=9.0",
+    "torch>=2.0",
+    "torchvision>=0.15",
+    "torchaudio>=2.0",
+    "denseav @ git+https://github.com/mhamilton723/DenseAV.git",
+    "streamlit>=1.35",
+    "pytest>=7.0",
+    "ruff>=0.1",
+]
+
+[project.scripts]
+av-toolbox = "av_toolbox.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["av_toolbox*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
