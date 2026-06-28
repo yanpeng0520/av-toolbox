@@ -131,8 +131,16 @@ docker run --rm -p 8501:8501 \
   av-toolbox
 ```
 
-See `docs/quickstart.md` for the full install, CLI, DenseAV, web UI, and Docker
+See [docs/quickstart.md](docs/quickstart.md) for the full install, CLI, DenseAV, web UI, and Docker
 quickstart.
+
+## Docs
+
+- [docs/tool-catalog.md](docs/tool-catalog.md): every registered tool name, CLI wrapper, input type,
+  artifact outputs, and runtime controls.
+- [docs/denseav.md](docs/denseav.md): DenseAV install, exact checkpoint filenames, cache
+  locations, GPU flags, and troubleshooting.
+- [docs/examples.md](docs/examples.md): Python API examples and CLI batch examples.
 
 ## Python API
 
@@ -140,6 +148,15 @@ quickstart.
 import av_toolbox
 
 tools = av_toolbox.list_tools()
+result = av_toolbox.run_tool(
+    "video.motion",
+    input_path="data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4",
+    output_dir="outputs/python_motion",
+    sample_fps=5,
+    max_seconds=5,
+    device="cpu",
+)
+print(result.timeline_json)
 ```
 
 The package currently includes the core registry/runtime foundation plus the

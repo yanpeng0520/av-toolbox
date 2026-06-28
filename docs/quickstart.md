@@ -18,6 +18,13 @@ DenseAV checkpoints are not committed to the repository. By default,
 `av.denseav` expects weights under `~/.cache/av_toolbox/weights/`, or you can
 pass a local checkpoint with `--checkpoint`.
 
+Expected default DenseAV checkpoint paths:
+
+```text
+~/.cache/av_toolbox/weights/denseav_2head.ckpt
+~/.cache/av_toolbox/weights/denseav_sound.ckpt
+```
+
 ## Smoke Test
 
 ```bash
@@ -96,3 +103,9 @@ docker build -t av-toolbox:denseav --build-arg INCLUDE_DENSEAV=1 .
 
 Keep model weights in the mounted cache or pass explicit checkpoint paths. Do
 not bake large weights into the image.
+
+## More Docs
+
+- [docs/tool-catalog.md](tool-catalog.md): registry names, CLI commands, and artifact outputs.
+- [docs/denseav.md](denseav.md): DenseAV checkpoint/cache setup and GPU notes.
+- [docs/examples.md](examples.md): Python API and CLI batch examples.
