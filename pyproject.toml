@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,9 +8,47 @@ version = "0.1.0"
 description = "Installable audio, video, and audio-visual analysis toolbox"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Peng", email = "yanp@zhaw.ch" },
+]
+maintainers = [
+    { name = "Peng", email = "yanp@zhaw.ch" },
+]
+keywords = [
+    "audio",
+    "video",
+    "audio-visual",
+    "analysis",
+    "computer-vision",
+    "ffmpeg",
+    "denseav",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "pyyaml>=6.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/yanpeng0520/av-toolbox"
+Repository = "https://github.com/yanpeng0520/av-toolbox"
+Documentation = "https://github.com/yanpeng0520/av-toolbox/tree/main/docs"
+Issues = "https://github.com/yanpeng0520/av-toolbox/issues"
+Changelog = "https://github.com/yanpeng0520/av-toolbox/releases"
 
 [project.optional-dependencies]
 video = [
