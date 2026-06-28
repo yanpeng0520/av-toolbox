@@ -7,6 +7,8 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[audio,video,av,dev]"
 ```
 
+Model-backed migrated tools are optional too: use `.[transcription]` for Whisper, `.[vision-models]` for YOLO and shot-type classification, `.[pose]` for MediaPipe, `.[action]` for PyTorchVideo action recognition, and `.[cut-detection]` for PySceneDetect.
+
 Use the heavier DenseAV extra only when you need DenseAV inference:
 
 ```bash
@@ -82,7 +84,25 @@ av-toolbox serve --host 127.0.0.1 --port 8501
 ```
 
 If Streamlit is installed, `serve` starts the Streamlit app. Otherwise it falls
-back to the built-in local web UI.
+back to the built-in local web UI. Both UIs open with the bundled Clever Cat
+demo clip and default outputs under `outputs/web_runs/latest`. Tool parameters
+use each tool's built-in defaults unless Advanced overrides are enabled; when
+you select a tool, Advanced shows that tool's own default parameter space.
+
+Public demo mode for a Cloudflare Tunnel origin on the DGX Spark:
+
+```bash
+av-toolbox serve \
+  --host 127.0.0.1 \
+  --port 8501 \
+  --output-root /srv/av-toolbox-demo/runs \
+  --public-demo \
+  --public-max-seconds 20 \
+  --public-max-upload-mb 100
+```
+
+Use `--public-enable-denseav` only when the DGX has DenseAV dependencies and
+weights installed. See [cloudflare-demo.md](cloudflare-demo.md).
 
 ## Docker
 
@@ -109,3 +129,4 @@ not bake large weights into the image.
 - [docs/tool-catalog.md](tool-catalog.md): registry names, CLI commands, and artifact outputs.
 - [docs/denseav.md](denseav.md): DenseAV checkpoint/cache setup and GPU notes.
 - [docs/examples.md](examples.md): Python API and CLI batch examples.
+- [docs/cloudflare-demo.md](cloudflare-demo.md): Cloudflare Tunnel and DGX Spark public demo deployment.

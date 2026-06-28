@@ -59,6 +59,27 @@ audio = [
     "librosa>=0.10",
     "soundfile>=0.12",
 ]
+transcription = [
+    "faster-whisper>=1.0",
+]
+pose = [
+    "mediapipe>=0.10",
+]
+action = [
+    "torch>=2.0",
+    "torchvision>=0.15",
+    "pytorchvideo>=0.1",
+]
+vision-models = [
+    "ultralytics>=8.0",
+    "pillow>=9.0",
+    "torch>=2.0",
+    "torchvision>=0.15",
+    "transformers>=4.40",
+]
+cut-detection = [
+    "scenedetect>=0.6",
+]
 av = [
     "av>=12.0",
 ]
@@ -87,11 +108,17 @@ all = [
     "opencv-python-headless>=4.8",
     "librosa>=0.10",
     "soundfile>=0.12",
+    "faster-whisper>=1.0",
     "av>=12.0",
     "pillow>=9.0",
     "torch>=2.0",
     "torchvision>=0.15",
     "torchaudio>=2.0",
+    "pytorchvideo>=0.1",
+    "ultralytics>=8.0",
+    "transformers>=4.40",
+    "mediapipe>=0.10",
+    "scenedetect>=0.6",
     "denseav @ git+https://github.com/mhamilton723/DenseAV.git",
     "streamlit>=1.35",
     "pytest>=7.0",
