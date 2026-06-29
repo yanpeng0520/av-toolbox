@@ -37,7 +37,16 @@ python -m pytest
 The test suite is configured to collect the packaged `tests/` directory only.
 Legacy migration scripts under `testing/` are not part of CI.
 
-## Generate Demo Media
+## Demo Media
+
+Curated sample videos live in Git LFS. Pull them after cloning:
+
+```bash
+git lfs install
+git lfs pull --include="data_segments/*.mp4"
+```
+
+You can also generate synthetic audio/video media locally:
 
 ```bash
 av-toolbox generate-demo-media --output-dir data_segments --duration 60
@@ -56,7 +65,7 @@ av-toolbox audio beat-detection \
   --output outputs/demo_beats
 
 av-toolbox av sync-correspondence \
-  data_segments/synthetic_hiphop_60s.mp4 \
+  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
   --output outputs/demo_sync
 ```
 
@@ -84,7 +93,7 @@ av-toolbox serve --host 127.0.0.1 --port 8501
 ```
 
 If Streamlit is installed, `serve` starts the Streamlit app. Otherwise it falls
-back to the built-in local web UI. Both UIs open with the bundled Clever Cat
+back to the built-in local web UI. Both UIs open with the generated synthetic
 demo clip and default outputs under `outputs/web_runs/latest`. Tool parameters
 use each tool's built-in defaults unless Advanced overrides are enabled; when
 you select a tool, Advanced shows that tool's own default parameter space.

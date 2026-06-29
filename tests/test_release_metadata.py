@@ -47,4 +47,10 @@ def test_license_and_manifest_protect_release_archives() -> None:
     for pattern in ("*.ckpt", "*.pt", "*.pth", "*.onnx", "*.safetensors", "*.h5"):
         assert f"global-exclude {pattern}" in manifest
 
-    assert "include data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4" in manifest
+    assert "include data_segments/" not in manifest
+
+
+def test_lfs_tracks_video_samples() -> None:
+    attributes = (ROOT / ".gitattributes").read_text()
+
+    assert "data_segments/*.mp4 filter=lfs diff=lfs merge=lfs -text" in attributes

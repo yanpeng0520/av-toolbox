@@ -1,12 +1,12 @@
 # API And CLI Examples
 
-These examples use the packaged registry names and the default demo media:
+These examples use the packaged registry names and the default Git LFS demo media:
 
 ```text
 data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4
 ```
 
-Generate the synthetic hip-hop WAV/MP4 demo when you want a longer music input:
+Run `git lfs pull --include="data_segments/*.mp4"` after cloning if the sample video has not been downloaded yet. Generate the synthetic hip-hop WAV/MP4 demo when you want a longer music input:
 
 ```bash
 av-toolbox generate-demo-media --output-dir data_segments --duration 60
@@ -157,7 +157,7 @@ av-toolbox audio music-phase \
 
 ```bash
 av-toolbox av sync-correspondence \
-  data_segments/synthetic_hiphop_60s.mp4 \
+  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
   --output outputs/av_sync \
   --sample-fps 10 \
   --max-seconds 20 \

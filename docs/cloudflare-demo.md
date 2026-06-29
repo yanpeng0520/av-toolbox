@@ -59,7 +59,7 @@ av-toolbox serve \
   --public-max-upload-mb 100
 ```
 
-Public mode starts on a bundled sample clip and also accepts uploads. It
+Public mode starts on a generated sample clip and also accepts uploads. It
 intentionally removes arbitrary media paths, output paths, cache paths,
 checkpoints, and advanced runtime controls from the browser. Public visitors can
 only change bounded demo settings such as analyzed duration and overlay export.

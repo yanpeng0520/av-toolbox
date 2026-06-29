@@ -7,19 +7,14 @@ from pathlib import Path
 import av_toolbox
 
 
-def _demo_video() -> Path:
-    root = Path(__file__).resolve().parents[1]
-    return root / "data_segments" / "Clever_Cat_Outsmarts_Warrior_square.mp4"
-
-
 def test_blur_exposure_registered() -> None:
     assert "video.blur_exposure" in [tool["name"] for tool in av_toolbox.list_tools()]
 
 
-def test_blur_exposure_creates_declared_artifacts(tmp_path) -> None:
+def test_blur_exposure_creates_declared_artifacts(tmp_path, demo_video_path: Path) -> None:
     result = av_toolbox.run_tool(
         "video.blur_exposure",
-        input_path=_demo_video(),
+        input_path=demo_video_path,
         output_dir=tmp_path,
         sample_fps=2.0,
         max_seconds=0.5,

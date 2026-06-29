@@ -36,9 +36,7 @@ omni-video-pipeline/
 data_samples/
 multicam_samples/
 data_segments/*
-!data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4
 
 # Large local assets and model weights should live outside package contents.
-# Keep small demo media only when intentionally curated.
 models/
 !models/.gitkeep

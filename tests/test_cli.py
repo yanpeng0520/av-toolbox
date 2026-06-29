@@ -83,14 +83,11 @@ def test_cli_list_tools_outputs_json(capsys) -> None:
     assert "video.shot_boundary" in captured.out
 
 
-def test_cli_video_blur_exposure_smoke(tmp_path, capsys) -> None:
-    root = Path(__file__).resolve().parents[1]
-    demo = root / "data_segments" / "Clever_Cat_Outsmarts_Warrior_square.mp4"
-
+def test_cli_video_blur_exposure_smoke(tmp_path, capsys, demo_video_path: Path) -> None:
     assert main([
         "video",
         "blur-exposure",
-        str(demo),
+        str(demo_video_path),
         "--output",
         str(tmp_path),
         "--sample-fps",
@@ -106,14 +103,11 @@ def test_cli_video_blur_exposure_smoke(tmp_path, capsys) -> None:
     assert Path(payload["timeline_json"]).exists()
 
 
-def test_cli_video_motion_smoke(tmp_path, capsys) -> None:
-    root = Path(__file__).resolve().parents[1]
-    demo = root / "data_segments" / "Clever_Cat_Outsmarts_Warrior_square.mp4"
-
+def test_cli_video_motion_smoke(tmp_path, capsys, demo_video_path: Path) -> None:
     assert main([
         "video",
         "motion",
-        str(demo),
+        str(demo_video_path),
         "--output",
         str(tmp_path),
         "--sample-fps",
@@ -129,14 +123,11 @@ def test_cli_video_motion_smoke(tmp_path, capsys) -> None:
     assert Path(payload["timeline_json"]).exists()
 
 
-def test_cli_video_shot_boundary_smoke(tmp_path, capsys) -> None:
-    root = Path(__file__).resolve().parents[1]
-    demo = root / "data_segments" / "Clever_Cat_Outsmarts_Warrior_square.mp4"
-
+def test_cli_video_shot_boundary_smoke(tmp_path, capsys, demo_video_path: Path) -> None:
     assert main([
         "video",
         "shot-boundary",
-        str(demo),
+        str(demo_video_path),
         "--output",
         str(tmp_path),
         "--sample-fps",

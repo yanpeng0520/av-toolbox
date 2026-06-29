@@ -37,6 +37,8 @@ conda activate av-toolbox
 
 python -m pip install --upgrade pip
 python -m pip install -e ".[audio,video,av,dev]"
+git lfs install
+git lfs pull --include="data_segments/*.mp4"
 av-toolbox list-tools
 av-toolbox generate-demo-media --output-dir data_segments --duration 60
 ```
@@ -86,7 +88,7 @@ Run the packaged audio-visual tools:
 
 ```bash
 av-toolbox av sync-correspondence \
-  data_segments/synthetic_hiphop_60s.mp4 \
+  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
   --output outputs/demo_sync
 
 av-toolbox av denseav \
@@ -127,7 +129,7 @@ av-toolbox serve --host 127.0.0.1 --port 8501
 ```
 
 The local UI uses the same registry and runtime contract as the Python API and CLI.
-It opens with the bundled demo clip, writes to `outputs/web_runs/latest`, and
+It opens with the generated demo clip, writes to `outputs/web_runs/latest`, and
 keeps tool parameters at their built-in defaults unless Advanced overrides are
 enabled. The Advanced parameter area adapts to the selected tool and starts from
 that tool's current defaults. It can upload or select media, preview MP4/audio
@@ -150,7 +152,7 @@ av-toolbox serve \
 ```
 
 Use `--public-enable-denseav` only after DenseAV dependencies and weights are
-installed on the DGX. Public mode starts with a bundled sample clip, also
+installed on the DGX. Public mode starts with a generated sample clip, also
 accepts uploads, exposes only bounded demo settings, hides local filesystem and
 runtime controls, caps uploads and analyzed duration, creates server-side output
 directories, and serializes public Streamlit runs.

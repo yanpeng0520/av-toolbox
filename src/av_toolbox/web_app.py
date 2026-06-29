@@ -16,6 +16,7 @@ from av_toolbox.public_demo import (
     DEFAULT_PUBLIC_MAX_UPLOAD_MB,
     DEFAULT_PUBLIC_PAGE_TITLE,
     default_public_workflow_name,
+    is_lfs_pointer_file,
     page_title_from_env,
     public_enable_denseav_from_env,
     public_max_seconds_from_env,
@@ -23,6 +24,7 @@ from av_toolbox.public_demo import (
     public_mode_from_env,
     public_run_kwargs,
     public_run_output_dir,
+    public_sample_media_path,
     public_tool_name,
     public_upload_bytes,
     public_upload_dir,
@@ -241,10 +243,13 @@ def main() -> None:
         upload_error = str(exc)
 
     if public_demo:
+        default_sample_path = resolve_existing_input_path(DEFAULT_MEDIA_PATH)
         input_path = (
             uploaded_path
             if public_input_mode == "Upload media"
-            else resolve_existing_input_path(DEFAULT_MEDIA_PATH)
+            else default_sample_path
+            if default_sample_path.exists() and not is_lfs_pointer_file(default_sample_path)
+            else public_sample_media_path(output_root)
         )
     else:
         input_path = uploaded_path or resolve_existing_input_path(st.session_state.get("media_path", ""))

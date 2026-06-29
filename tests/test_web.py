@@ -124,7 +124,7 @@ def test_build_run_kwargs_only_sends_explicit_overrides() -> None:
     }
 
 
-def test_ui_defaults_point_at_bundled_demo_and_latest_output(tmp_path) -> None:
+def test_ui_defaults_keep_default_media_path_and_latest_output(tmp_path) -> None:
     values = default_form_values(tmp_path)
 
     assert default_workflow_name() == "Motion"
@@ -136,12 +136,12 @@ def test_ui_defaults_point_at_bundled_demo_and_latest_output(tmp_path) -> None:
     assert values["override_defaults"] is False
 
 
-def test_ui_resolves_bundled_default_media_from_other_cwd(tmp_path, monkeypatch) -> None:
+def test_ui_resolves_default_media_path_from_other_cwd(tmp_path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
     path = resolve_existing_input_path(default_form_values(tmp_path)["media_path"])
 
-    assert path.exists()
     assert path.name == "Clever_Cat_Outsmarts_Warrior_square.mp4"
+    assert path.parent.name == "data_segments"
 
 
 def test_denseav_workflow_uses_tool_defaults(tmp_path) -> None:
@@ -257,7 +257,8 @@ def test_builtin_web_falls_back_from_unusable_output_dir(tmp_path) -> None:
 
 def test_public_upload_resolution_caps_and_sanitizes(tmp_path) -> None:
     sample = resolve_public_input_path({"input_mode": FormField(name="input_mode", value="sample")}, tmp_path, public_max_upload_mb=1)
-    assert sample.name == "Clever_Cat_Outsmarts_Warrior_square.mp4"
+    assert sample.suffix == ".mp4"
+    assert sample.exists()
 
     form = {"input_mode": FormField(name="input_mode", value="upload"), "upload": FormField(name="upload", filename="my clip.mp4", data=b"abc")}
     path = resolve_public_input_path(form, tmp_path, public_max_upload_mb=1)
@@ -283,6 +284,32 @@ def test_public_upload_resolution_caps_and_sanitizes(tmp_path) -> None:
         raise AssertionError("unsupported upload should fail")
 
 
+def test_public_sample_falls_back_to_generated_media(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr("av_toolbox.web_server.DEFAULT_MEDIA_PATH", "missing-demo.mp4")
+
+    sample = resolve_public_input_path({"input_mode": FormField(name="input_mode", value="sample")}, tmp_path, public_max_upload_mb=1)
+
+    assert sample.parent == tmp_path / "public_sample"
+    assert sample.name == "av_toolbox_public_sample.mp4"
+    assert sample.exists()
+
+
+def test_public_sample_falls_back_when_lfs_pointer_is_unpulled(tmp_path, monkeypatch) -> None:
+    pointer = tmp_path / "sample.mp4"
+    pointer.write_text(
+        "version https://git-lfs.github.com/spec/v1\n"
+        "oid sha256:abc123\n"
+        "size 3770566\n"
+    )
+    monkeypatch.setattr("av_toolbox.web_server.DEFAULT_MEDIA_PATH", str(pointer))
+
+    sample = resolve_public_input_path({"input_mode": FormField(name="input_mode", value="sample")}, tmp_path, public_max_upload_mb=1)
+
+    assert sample != pointer
+    assert sample.parent == tmp_path / "public_sample"
+    assert sample.exists()
+
+
 def test_builtin_web_artifact_safety_and_listing(tmp_path) -> None:
     artifact = tmp_path / "run" / "timeline.json"
     artifact.parent.mkdir()
@@ -296,19 +323,17 @@ def test_builtin_web_artifact_safety_and_listing(tmp_path) -> None:
     assert is_allowed_path(Path.cwd() / "README.md", tmp_path, public_demo=True) is False
 
 
-def test_builtin_web_run_endpoint_executes_registry_tool(tmp_path) -> None:
+def test_builtin_web_run_endpoint_executes_registry_tool(tmp_path, demo_video_path: Path) -> None:
     output_root = tmp_path / "web"
     output_root.mkdir()
     server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(output_root))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
 
-    root = Path(__file__).resolve().parents[1]
-    demo = root / "data_segments" / "Clever_Cat_Outsmarts_Warrior_square.mp4"
     run_output = tmp_path / "run"
     form = urlencode({
         "tool_name": "video.motion",
-        "media_path": str(demo),
+        "media_path": str(demo_video_path),
         "output_dir": str(run_output),
         "export_json": "on",
         "export_csv": "on",

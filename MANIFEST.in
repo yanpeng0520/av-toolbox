@@ -18,7 +18,6 @@ prune models
 prune build
 prune dist
 prune data_segments
-include data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4
 
 global-exclude __pycache__
 global-exclude *.py[cod]

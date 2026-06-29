@@ -22,9 +22,11 @@ from av_toolbox.public_demo import (
     DEFAULT_PUBLIC_MAX_UPLOAD_MB,
     DEFAULT_PUBLIC_PAGE_TITLE,
     default_public_workflow_name,
+    is_lfs_pointer_file,
     page_title_from_env,
     public_run_kwargs,
     public_run_output_dir,
+    public_sample_media_path,
     public_tool_name,
     public_upload_bytes,
     public_upload_dir,
@@ -390,9 +392,9 @@ def resolve_public_input_path(form: FormData, output_root: Path, public_max_uplo
     input_mode = form_text(form, "input_mode", "upload" if upload and upload.filename else "sample")
     if input_mode == "sample":
         sample_path = resolve_existing_input_path(DEFAULT_MEDIA_PATH)
-        if not sample_path.exists():
-            raise ValueError("Sample media is not available")
-        return sample_path
+        if sample_path.exists() and not is_lfs_pointer_file(sample_path):
+            return sample_path
+        return public_sample_media_path(output_root)
     if upload is None or not upload.filename:
         raise ValueError("Upload a media file first")
     if len(upload.data) > public_upload_bytes(public_max_upload_mb):
@@ -896,7 +898,9 @@ def is_allowed_path(path: Path, output_root: Path, *, public_demo: bool = False)
         sample_path = resolve_existing_input_path(DEFAULT_MEDIA_PATH).resolve()
         allowed_roots = [output_root.resolve()]
         return (
-            resolved == sample_path
+            sample_path.exists()
+            and not is_lfs_pointer_file(sample_path)
+            and resolved == sample_path
             or any(resolved == root or resolved.is_relative_to(root) for root in allowed_roots)
         )
     allowed_roots = [Path.cwd().resolve(), project_root().resolve(), output_root.resolve()]

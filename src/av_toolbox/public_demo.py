@@ -17,6 +17,9 @@ DEFAULT_LOCAL_PAGE_TITLE = "Video Analysis Orchestrator"
 DEFAULT_PUBLIC_PAGE_TITLE = "AV Toolbox Demo"
 PUBLIC_OUTPUT_SUBDIR = "public_runs"
 PUBLIC_UPLOAD_SUBDIR = "public_uploads"
+PUBLIC_SAMPLE_SUBDIR = "public_sample"
+PUBLIC_SAMPLE_STEM = "av_toolbox_public_sample"
+LFS_POINTER_PREFIX = b"version https://git-lfs.github.com/spec/v1\n"
 PUBLIC_BASE_WORKFLOW_NAMES = ("AV Sync", "Motion", "Quality", "Shot Boundaries", "Beats")
 PUBLIC_DENSEAV_WORKFLOW_NAMES = ("DenseAV",)
 
@@ -98,6 +101,38 @@ def public_upload_bytes(max_upload_mb: int = DEFAULT_PUBLIC_MAX_UPLOAD_MB) -> in
 
 def public_upload_dir(output_root: str | Path) -> Path:
     return Path(output_root).expanduser() / PUBLIC_UPLOAD_SUBDIR
+
+
+def is_lfs_pointer_file(path: str | Path) -> bool:
+    try:
+        with Path(path).open("rb") as handle:
+            return handle.read(len(LFS_POINTER_PREFIX)) == LFS_POINTER_PREFIX
+    except OSError:
+        return False
+
+
+def public_sample_media_path(output_root: str | Path) -> Path:
+    sample_dir = Path(output_root).expanduser() / PUBLIC_SAMPLE_SUBDIR
+    sample_path = sample_dir / f"{PUBLIC_SAMPLE_STEM}.mp4"
+    if sample_path.exists():
+        return sample_path
+    try:
+        from av_toolbox.demo_media import generate_synthetic_hiphop
+
+        payload = generate_synthetic_hiphop(
+            output_dir=sample_dir,
+            duration=4.0,
+            sample_rate=22050,
+            stem=PUBLIC_SAMPLE_STEM,
+            fps=12.0,
+            width=640,
+            height=360,
+        )
+    except Exception as exc:
+        raise ValueError(
+            "Sample media is not available. Upload a file or install the demo media dependencies."
+        ) from exc
+    return Path(payload["mp4_path"])
 
 
 def public_run_output_dir(output_root: str | Path) -> Path:

@@ -87,14 +87,11 @@ def test_denseav_explicit_checkpoint_resolution(tmp_path) -> None:
     assert source_kind == "explicit_checkpoint"
 
 
-def test_denseav_missing_checkpoint_message_uses_cache_dir(tmp_path) -> None:
-    root = Path(__file__).resolve().parents[1]
-    demo = root / "data_segments" / "Clever_Cat_Outsmarts_Warrior_square.mp4"
-
+def test_denseav_missing_checkpoint_message_uses_cache_dir(tmp_path, demo_video_path: Path) -> None:
     with pytest.raises(FileNotFoundError, match="denseav_2head.ckpt"):
         av_toolbox.run_tool(
             "av.denseav",
-            input_path=demo,
+            input_path=demo_video_path,
             output_dir=tmp_path / "out",
             cache_dir=tmp_path / "cache",
             model_name="sound_and_language",
@@ -190,7 +187,7 @@ def test_denseav_squeeze_sim_by_head_drops_single_head_only() -> None:
     os.environ.get("AV_TOOLBOX_RUN_DENSEAV_SMOKE") != "1",
     reason="set AV_TOOLBOX_RUN_DENSEAV_SMOKE=1 to run DenseAV inference",
 )
-def test_denseav_clever_cat_opt_in_smoke(tmp_path) -> None:
+def test_denseav_generated_media_opt_in_smoke(tmp_path, demo_video_path: Path) -> None:
     pytest.importorskip("denseav")
     pytest.importorskip("av")
     pytest.importorskip("torch")
@@ -198,11 +195,9 @@ def test_denseav_clever_cat_opt_in_smoke(tmp_path) -> None:
     if not checkpoint.exists():
         pytest.skip(f"DenseAV checkpoint missing: {checkpoint}")
 
-    root = Path(__file__).resolve().parents[1]
-    demo = root / "data_segments" / "Clever_Cat_Outsmarts_Warrior_square.mp4"
     result = av_toolbox.run_tool(
         "av.denseav",
-        input_path=demo,
+        input_path=demo_video_path,
         output_dir=tmp_path / "out",
         model_name="sound_and_language",
         max_seconds=0.5,
