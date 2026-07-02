@@ -23,6 +23,10 @@ omni-video-pipeline/.env.*
 venv/
 omni-video-pipeline/venv/
 
+# Local scratch/test runs
+tmp/
+*.log
+
 # Generated analysis outputs
 outputs/
 output/
@@ -40,3 +44,13 @@ data_segments/*
 # Large local assets and model weights should live outside package contents.
 models/
 !models/.gitkeep
+
+# Local/private deployment notes
+/docs/cloudflare-demo.md
+/docs/streamlit-demo-overview.md
+
+# Local model/checkpoint weights
+*.pt
+*.pth
+*.ckpt
+*.onnx

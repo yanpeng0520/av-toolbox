@@ -3,14 +3,38 @@
 from __future__ import annotations
 
 import argparse
+import json
 from html import escape
+import sys
 import threading
 import time
 from pathlib import Path
 from typing import Any
 
-import av_toolbox
-from av_toolbox.public_demo import (
+
+def _normalize_streamlit_sys_path() -> None:
+    """Prevent the Streamlit script directory from shadowing top-level packages."""
+    package_dir = Path(__file__).resolve().parent
+    src_dir = package_dir.parent
+    cleaned = []
+    for entry in sys.path:
+        try:
+            resolved = Path(entry or ".").resolve()
+        except OSError:
+            cleaned.append(entry)
+            continue
+        if resolved == package_dir:
+            continue
+        cleaned.append(entry)
+    if not any(Path(entry or ".").resolve() == src_dir for entry in cleaned):
+        cleaned.insert(0, str(src_dir))
+    sys.path[:] = cleaned
+
+
+_normalize_streamlit_sys_path()
+
+import av_toolbox  # noqa: E402
+from av_toolbox.public_demo import (  # noqa: E402
     DEFAULT_LOCAL_PAGE_TITLE,
     DEFAULT_PUBLIC_MAX_SECONDS,
     DEFAULT_PUBLIC_MAX_UPLOAD_MB,
@@ -30,7 +54,7 @@ from av_toolbox.public_demo import (
     public_upload_dir,
     public_workflow_names,
 )
-from av_toolbox.ui_defaults import (
+from av_toolbox.ui_defaults import (  # noqa: E402
     BASE_FORM_VALUES,
     DEFAULT_MEDIA_PATH,
     DEFAULT_OUTPUT_ROOT,
@@ -260,7 +284,7 @@ def main() -> None:
                 "Analyze Seconds",
                 min_value=0.1,
                 max_value=max(0.1, float(args.public_max_seconds)),
-                value=min(10.0, max(0.1, float(args.public_max_seconds))),
+                value=max(0.1, float(args.public_max_seconds)),
                 step=1.0,
                 key="public_max_seconds_value",
             )
@@ -314,9 +338,9 @@ def main() -> None:
         with output_slot.container():
             _render_running_output_panel(st, tool_name)
         if public_demo:
-            run_ok = _run_public(st, tool_name, input_path, output_root, public_max_seconds, public_export_overlay, progress_slot)
+            _run_public(st, tool_name, input_path, output_root, public_max_seconds, public_export_overlay, progress_slot)
         else:
-            run_ok = _run_local(st, tool_name, input_path, output_dir_text, output_root, progress_slot=progress_slot)
+            _run_local(st, tool_name, input_path, output_dir_text, output_root, progress_slot=progress_slot)
         result_payload = st.session_state.get("last_result")
 
     if result_payload:
@@ -411,6 +435,16 @@ def _render_result_details(st: Any, result_payload: dict[str, Any]) -> None:
     if summary:
         st.json(summary, expanded=False)
 
+    transcript = _transcript_text_from_result(result_payload)
+    if transcript:
+        st.markdown("Transcript")
+        st.text_area(
+            "Transcript",
+            transcript,
+            height=260,
+            label_visibility="collapsed",
+        )
+
     artifacts = artifact_items(_result_from_dict(result_payload))
     if artifacts:
         st.markdown("Artifacts")
@@ -425,6 +459,49 @@ def _render_result_details(st: Any, result_payload: dict[str, Any]) -> None:
 
     with st.expander("JSON", expanded=False):
         st.json(_ui_result_payload(result_payload))
+
+
+def _transcript_text_from_result(result_payload: dict[str, Any]) -> str:
+    if result_payload.get("tool_name") != "audio.transcription":
+        return ""
+    timeline_value = result_payload.get("timeline_json")
+    if not timeline_value:
+        return ""
+    timeline_path = Path(str(timeline_value))
+    if not timeline_path.exists():
+        return ""
+    try:
+        payload = json.loads(timeline_path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return ""
+
+    rows = payload.get("segments") or payload.get("events") or []
+    if not isinstance(rows, list):
+        return ""
+    lines = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        text = str(row.get("text") or row.get("content") or "").strip()
+        if not text:
+            continue
+        start = _format_transcript_timestamp(row.get("start"))
+        end = _format_transcript_timestamp(row.get("end"))
+        if start and end:
+            lines.append(f"{start} - {end}  {text}")
+        else:
+            lines.append(text)
+    return "\n".join(lines)
+
+
+def _format_transcript_timestamp(value: Any) -> str:
+    try:
+        seconds = max(0.0, float(value))
+    except (TypeError, ValueError):
+        return ""
+    minutes = int(seconds // 60)
+    remainder = seconds - minutes * 60
+    return f"{minutes:02d}:{remainder:06.3f}"
 
 
 def _ui_result_payload(result_payload: dict[str, Any]) -> dict[str, Any]:

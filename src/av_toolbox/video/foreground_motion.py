@@ -8,10 +8,16 @@ from pathlib import Path
 from typing import Any
 
 from av_toolbox.core.base_tool import BaseTool, ToolRunContext
+from av_toolbox.core.cache import ModelCache
 from av_toolbox.core.media_io import iter_sampled_frames, read_video_metadata
 from av_toolbox.core.result import AVResult
 from av_toolbox.core.simple_outputs import resize_to_width, write_standard_artifacts
 from av_toolbox.video.source_overlay import mux_video_overlay_with_source_audio
+from av_toolbox.video.yolo_utils import (
+    resolve_yolo_device,
+    resolve_yolo_model_path,
+    yolo_predict_with_auto_cpu_retry,
+)
 
 
 class ForegroundMotionTool(BaseTool):
@@ -51,8 +57,9 @@ class ForegroundMotionTool(BaseTool):
         masker = _Masker(
             mask_mode=mask_mode,
             model_name=model_name,
+            cache=context.cache,
             confidence=confidence,
-            device=context.hardware.resolved_device(),
+            device=resolve_yolo_device(context.hardware) if mask_mode in ("yolo", "yolo_seg") else "cpu",
         )
 
         rows = []
@@ -139,6 +146,7 @@ class ForegroundMotionTool(BaseTool):
             "downscale_width": downscale_width,
             "mask_mode": mask_mode,
             "model_name": model_name,
+            "model_path": masker.model_path,
             "confidence": confidence,
             "active_threshold_px": active_threshold_px,
             "event_threshold_px": event_threshold_px,
@@ -195,15 +203,26 @@ class ForegroundMotionTool(BaseTool):
 
 
 class _Masker:
-    def __init__(self, *, mask_mode: str, model_name: str | None, confidence: float, device: str) -> None:
+    def __init__(
+        self,
+        *,
+        mask_mode: str,
+        model_name: str | None,
+        cache: ModelCache,
+        confidence: float,
+        device: str,
+    ) -> None:
         self.requested_mode = mask_mode
         self.effective_mode = "none"
         self.model = None
         self.model_name = model_name
+        self.model_path: str | None = None
         self.confidence = confidence
         self.device = device
         if mask_mode in ("yolo", "yolo_seg"):
-            self.model = _load_yolo(model_name or "yolov8n-seg.pt")
+            model_label = model_name or "yolov8n-seg.pt"
+            self.model_path = resolve_yolo_model_path(model_label, cache)
+            self.model = _load_yolo(self.model_path)
             self.effective_mode = mask_mode
 
     def mask(self, frame: Any, cv2: Any, np: Any) -> Any:
@@ -211,12 +230,11 @@ class _Masker:
             return np.ones(frame.shape[:2], dtype=np.float32)
 
         device_arg = self.device if self.device.startswith("cuda") else "cpu"
-        result = self.model.predict(
+        result = yolo_predict_with_auto_cpu_retry(
+            self.model,
             frame,
-            conf=self.confidence,
-            device=device_arg,
-            verbose=False,
-        )[0]
+            {"conf": self.confidence, "device": device_arg, "verbose": False},
+        )
         mask = np.zeros(frame.shape[:2], dtype=np.float32)
         if self.requested_mode == "yolo_seg" and getattr(result, "masks", None) is not None:
             data = result.masks.data

@@ -264,7 +264,7 @@ def _render_action_overlay(
     height: int | None,
     threshold: float,
 ) -> Path:
-    """Dark-slate overlay matching the video.camera_shake timeline style."""
+    """Render source video with only a compact top-left action badge."""
     cv2, np = _overlay_imports()
     if fps <= 0:
         raise ValueError("overlay_fps must be greater than zero")
@@ -282,11 +282,9 @@ def _render_action_overlay(
 
     duration = max(0.1, float(duration or 0.1))
     out_w = _even(max(480, int(width or 960)))
-    video_h = _even(max(240, int(round(out_w * src_h / max(1, src_w)))))
-    panel_h = 150
-    out_h = _even(max(video_h + panel_h, int(height or 0)))
+    out_h = _even(max(240, int(round(out_w * src_h / max(1, src_w)))))
     if height:
-        video_h = _even(max(180, out_h - panel_h))
+        out_h = _even(max(240, int(height)))
 
     tmp_path = workspace / f"{output_path.stem}_{uuid.uuid4().hex}_video_only.mp4"
     writer = cv2.VideoWriter(str(tmp_path), cv2.VideoWriter_fourcc(*"mp4v"), fps, (out_w, out_h))
@@ -298,26 +296,10 @@ def _render_action_overlay(
     conf = np.asarray([float(row.get("confidence", 0.0)) for row in rows], dtype=float)
     labels = [str(row.get("label", "")) for row in rows]
 
-    # Cool dark-slate theme (BGR), shared with video.camera_shake.
     letterbox = (20, 18, 16)
-    panel_bg = (40, 33, 28)
     text_hi = (243, 240, 238)
-    text_lo = (170, 158, 150)
-    axis_col = (86, 74, 66)
-    ok_col = (150, 200, 96)        # teal-green : confident (>= threshold)
-    dim_col = (120, 128, 132)      # grey       : below threshold
-    playhead_col = (90, 205, 255)  # amber
-
-    margin_l = 66
-    margin_r = 22
-    plot_x0 = margin_l
-    plot_x1 = out_w - margin_r
-    plot_y0 = video_h + 54
-    plot_y1 = out_h - 22
-    plot_w = max(1, plot_x1 - plot_x0)
-    plot_h = max(1, plot_y1 - plot_y0)
-
-    v_max = 1.0  # confidence is a probability in [0, 1]
+    ok_col = (150, 200, 96)
+    dim_col = (120, 128, 132)
     threshold = min(max(float(threshold), 0.0), 1.0)
 
     n_frames = max(1, int(math.ceil(duration * fps)) + 1)
@@ -328,38 +310,16 @@ def _render_action_overlay(
             ok, frame = cap.read()
             canvas = np.full((out_h, out_w, 3), letterbox, dtype=np.uint8)
             if ok:
-                resized = cv2.resize(frame, (out_w, video_h), interpolation=cv2.INTER_AREA)
-                canvas[:video_h, :out_w] = resized
+                resized = cv2.resize(frame, (out_w, out_h), interpolation=cv2.INTER_AREA)
+                canvas[:out_h, :out_w] = resized
 
             idx = _nearest_index(np, times, t)
             cur_label = labels[idx] if idx is not None else ""
             cur_conf = float(conf[idx]) if idx is not None else 0.0
 
-            # Single status badge, kept only in the top-left corner.
             _draw_action_badge(
                 canvas=canvas, cv2=cv2, label=cur_label, confidence=cur_conf,
                 threshold=threshold, ok_col=ok_col, dim_col=dim_col, text_hi=text_hi,
-            )
-
-            # Timeline panel under the video.
-            cv2.rectangle(canvas, (0, video_h), (out_w, out_h), panel_bg, cv2.FILLED)
-            cv2.putText(canvas, "Action recognition", (24, video_h + 32),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, text_hi, 1, cv2.LINE_AA)
-            cv2.putText(canvas, f"confidence >= {threshold:.2f}", (256, video_h + 32),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.46, text_lo, 1, cv2.LINE_AA)
-            time_txt = f"{t:5.2f} / {duration:.2f}s"
-            (tw, _th), _ = cv2.getTextSize(time_txt, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-            cv2.putText(canvas, time_txt, (out_w - margin_r - tw, video_h + 32),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, text_lo, 1, cv2.LINE_AA)
-
-            playhead_x = int(round(plot_x0 + min(max(t / duration, 0.0), 1.0) * plot_w))
-            _draw_action_timeline(
-                canvas=canvas, cv2=cv2, times=times, conf=conf, labels=labels,
-                duration=duration, v_max=v_max, threshold=threshold,
-                plot_x0=plot_x0, plot_x1=plot_x1, plot_y0=plot_y0, plot_y1=plot_y1,
-                plot_w=plot_w, plot_h=plot_h, axis_col=axis_col, text_lo=text_lo,
-                text_hi=text_hi, ok_col=ok_col, dim_col=dim_col, playhead_col=playhead_col,
-                playhead_x=playhead_x, current_conf=cur_conf,
             )
             writer.write(canvas)
     finally:
@@ -414,88 +374,6 @@ def _draw_action_badge(
     if fill_w > 0:
         cv2.rectangle(canvas, (bar_x, bar_y), (bar_x + fill_w, bar_y + bar_h), state_col, cv2.FILLED)
     cv2.rectangle(canvas, (bar_x, bar_y), (bar_x + bar_w, bar_y + bar_h), (170, 170, 170), 1, cv2.LINE_AA)
-
-
-def _draw_action_timeline(
-    *,
-    canvas: Any,
-    cv2: Any,
-    times: Any,
-    conf: Any,
-    labels: list[str],
-    duration: float,
-    v_max: float,
-    threshold: float,
-    plot_x0: int,
-    plot_x1: int,
-    plot_y0: int,
-    plot_y1: int,
-    plot_w: int,
-    plot_h: int,
-    axis_col: tuple[int, int, int],
-    text_lo: tuple[int, int, int],
-    text_hi: tuple[int, int, int],
-    ok_col: tuple[int, int, int],
-    dim_col: tuple[int, int, int],
-    playhead_col: tuple[int, int, int],
-    playhead_x: int,
-    current_conf: float,
-) -> None:
-    """Confidence line chart annotated with action changes; no gridlines."""
-    # Single subtle baseline (x-axis) - the only horizontal rule in the panel.
-    cv2.line(canvas, (plot_x0, plot_y1), (plot_x1, plot_y1), axis_col, 1, cv2.LINE_AA)
-    cv2.putText(canvas, "0", (plot_x0 - 22, plot_y1 + 4),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.4, text_lo, 1, cv2.LINE_AA)
-    cv2.putText(canvas, "1.0", (plot_x0 - 34, plot_y0 + 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.4, text_lo, 1, cv2.LINE_AA)
-
-    # Threshold shown as a short axis tick, not a full-width gridline.
-    thr_y = int(round(plot_y1 - min(max(float(threshold) / v_max, 0.0), 1.0) * plot_h))
-    cv2.line(canvas, (plot_x0 - 6, thr_y), (plot_x0 + 8, thr_y), (120, 128, 150), 1, cv2.LINE_AA)
-
-    if getattr(times, "size", 0) == 0 or getattr(conf, "size", 0) == 0:
-        return
-
-    def _pt(row_t: float, value: float) -> tuple[int, int]:
-        x = int(round(plot_x0 + min(max(float(row_t) / duration, 0.0), 1.0) * plot_w))
-        yv = int(round(plot_y1 - min(max(float(value) / v_max, 0.0), 1.0) * plot_h))
-        return x, yv
-
-    points = [_pt(times[i], conf[i]) for i in range(len(conf))]
-    for i in range(1, len(points)):
-        seg_col = ok_col if (float(conf[i]) >= threshold or float(conf[i - 1]) >= threshold) else dim_col
-        cv2.line(canvas, points[i - 1], points[i], seg_col, 2, cv2.LINE_AA)
-    for i, point in enumerate(points):
-        dot_col = ok_col if float(conf[i]) >= threshold else dim_col
-        cv2.circle(canvas, point, 3, dot_col, -1, cv2.LINE_AA)
-
-    # Annotate where the action label changes, with an overlap guard.
-    last_x = -10_000
-    for i in range(len(labels)):
-        if i > 0 and labels[i] == labels[i - 1]:
-            continue
-        px = points[i][0]
-        if px < last_x + 82:
-            continue
-        cv2.line(canvas, (px, plot_y0 + 2), (px, plot_y0 + 10), axis_col, 1, cv2.LINE_AA)
-        cv2.putText(canvas, _format_action(labels[i])[:14], (px + 3, plot_y0 + 12),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, text_lo, 1, cv2.LINE_AA)
-        last_x = px
-
-    # Playhead stays inside the panel and carries the current reading.
-    cv2.line(canvas, (playhead_x, plot_y0 - 6), (playhead_x, plot_y1 + 4), playhead_col, 2, cv2.LINE_AA)
-    cy = int(round(plot_y1 - min(max(float(current_conf) / v_max, 0.0), 1.0) * plot_h))
-    cur_col = ok_col if float(current_conf) >= threshold else dim_col
-    cv2.circle(canvas, (playhead_x, cy), 4, cur_col, -1, cv2.LINE_AA)
-    cv2.circle(canvas, (playhead_x, cy), 4, text_hi, 1, cv2.LINE_AA)
-
-    val_txt = f"{float(current_conf) * 100.0:.0f}%"
-    (vw, _vh), _ = cv2.getTextSize(val_txt, cv2.FONT_HERSHEY_SIMPLEX, 0.44, 1)
-    tx = playhead_x + 8
-    if tx + vw > plot_x1:
-        tx = playhead_x - 8 - vw
-    ty = min(max(cy - 8, plot_y0 + 14), plot_y1 - 4)
-    cv2.putText(canvas, val_txt, (tx, ty), cv2.FONT_HERSHEY_SIMPLEX, 0.44, text_hi, 1, cv2.LINE_AA)
 
 
 def _even(value: int) -> int:

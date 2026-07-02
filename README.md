@@ -1,55 +1,67 @@
 # av-toolbox
 
+[![PyPI version](https://badge.fury.io/py/av-analysis-toolbox.svg)](https://pypi.org/project/av-analysis-toolbox/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/av-analysis-toolbox.svg)](https://pypi.org/project/av-analysis-toolbox/)
+[![Build Status](https://github.com/yanpeng0520/av-toolbox/actions/workflows/ci.yml/badge.svg)](https://github.com/yanpeng0520/av-toolbox/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Upload a video, get visual/audio/AV diagnostics with overlay videos.
 
-[Open the live demo](https://demo.yan-peng.com)
+**Live demo:** [demo.yan-peng.com](https://demo.yan-peng.com) - choose a Video, Audio, or Audio-Visual tool; use the sample clip or upload a short non-sensitive file; then view/download the overlay MP4, metrics, and artifacts.
 
-`av-toolbox` is an installable audio, video, and audio-visual analysis toolbox with one Python registry, one CLI, and a Streamlit demo UI. It turns short media clips into overlay MP4s, timeline JSON, feature CSVs, and HTML reports.
+`av-toolbox` is an installable audio, video, and audio-visual analysis toolbox with one Python registry, one CLI, and a Streamlit demo UI.
+
+PyPI distribution name: `av-analysis-toolbox` (the import package remains `av_toolbox`, and the CLI remains `av-toolbox`).
+
+## Tool Catalog
+
+See [docs/tool-catalog.md](docs/tool-catalog.md) for detailed per-tool
+instructions, CLI and Python examples, UI notes, generated config files, input
+types, output artifacts, optional dependency extras, and GPU/model requirements.
 
 ## Overlay Examples
 
+The overlays below are rendered on demo footage from [this YouTube video](https://www.youtube.com/watch?v=THjXkQLy4wE). All rights to the original footage remain with its creator; it is included here for demonstration only. See [Credits](#credits).
+
 **Video editing**
 
-| Cut Detection | Shot Type |
+| [Cut Detection](docs/tool-catalog.md#video-cut-detection) | [Shot Type](docs/tool-catalog.md#video-shot-type) |
 | --- | --- |
 | ![Cut detection](docs/assets/gallery/video-cut-detection.gif) | ![Shot type](docs/assets/gallery/video-shot-type.gif) |
 
 **Video quality**
 
-| Image Quality | Camera Shake |
+| [Image Quality](docs/tool-catalog.md#video-image-quality) | [Camera Shake](docs/tool-catalog.md#video-camera-shake) |
 | --- | --- |
 | ![Image quality](docs/assets/gallery/video-quality.gif) | ![Camera shake](docs/assets/gallery/video-camera-shake.gif) |
 
 **Motion detection**
 
-| Motion | Optical Flow | Foreground Motion |
+| [Motion](docs/tool-catalog.md#video-motion) | [Optical Flow](docs/tool-catalog.md#video-optical-flow) | [Foreground Motion](docs/tool-catalog.md#video-foreground-motion) |
 | --- | --- | --- |
 | ![Motion](docs/assets/gallery/video-motion.gif) | ![Optical flow](docs/assets/gallery/video-optical-flow.gif) | ![Foreground motion](docs/assets/gallery/video-foreground-motion.gif) |
 
 **Object and action understanding**
 
-| Object Detection | Segmentation | Action Recognition | Pose Detection |
+| [Object Detection](docs/tool-catalog.md#video-object-detection) | [Segmentation](docs/tool-catalog.md#video-segmentation) | [Action Recognition](docs/tool-catalog.md#video-action-recognition) | [Pose Detection](docs/tool-catalog.md#video-pose) |
 | --- | --- | --- | --- |
 | ![Object detection](docs/assets/gallery/video-object-detection.gif) | ![Segmentation](docs/assets/gallery/video-segmentation.gif) | ![Action recognition](docs/assets/gallery/video-action-recognition.gif) | ![Pose detection](docs/assets/gallery/video-pose.gif) |
 
-**Audio and audio-visual tools**
+**Audio tools**
 
-| Beat Detection | Audio Energy | Audio Events | AV Sync |
-| --- | --- | --- | --- |
-| ![Beat detection](docs/assets/gallery/audio-beat-detection.gif) | ![Audio energy](docs/assets/gallery/audio-energy.gif) | ![Audio events](docs/assets/gallery/audio-event-detection.gif) | ![AV sync](docs/assets/gallery/av-sync-correspondence.gif) |
+| [Beat Detection](docs/tool-catalog.md#audio-beat-detection) | [Audio Energy](docs/tool-catalog.md#audio-energy) | [Audio Events](docs/tool-catalog.md#audio-event-detection) |
+| --- | --- | --- |
+| ![Beat detection](docs/assets/gallery/audio-beat-detection.gif) | ![Audio energy](docs/assets/gallery/audio-energy.gif) | ![Audio events](docs/assets/gallery/audio-event-detection.gif) |
 
-## Try The Demo
+**Audio-visual foundation model**
 
-1. Open <https://demo.yan-peng.com>.
-2. Choose a tool type: Video, Audio, or Audio-Visual.
-3. Pick a tool, use the sample clip or upload a short non-sensitive file, then click Run.
-4. Inspect the input, output overlay, summary metrics, and downloadable artifacts.
+| [DenseAV](docs/tool-catalog.md#av-denseav) on CatFu |
+| --- |
+| ![DenseAV on CatFu](docs/assets/gallery/av-denseav.gif) |
 
-The public demo runs Streamlit on a DGX Spark origin behind Cloudflare Tunnel. Public mode keeps uploads bounded, hides server filesystem paths, and exposes only demo-safe controls. Please do not upload private or sensitive media.
+## Happy Path: Local Install And Demo
 
-## Install
-
-Minimum editable install:
+This path works from a fresh clone without private media, cloud services, or model checkpoints. It needs Python 3.10+ and FFmpeg on `PATH`, installs the local UI plus the lightweight audio/video tools, generates a small synthetic demo clip, runs one CLI tool, and starts the web UI.
 
 ```bash
 git clone https://github.com/yanpeng0520/av-toolbox.git
@@ -57,53 +69,47 @@ cd av-toolbox
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -U pip
-python -m pip install -e .
-```
+python -m pip install -e ".[web,audio,video]"
 
-Typical local/web install:
+av-toolbox generate-demo-media --output-dir data_segments --duration 12
 
-```bash
-python -m pip install -e ".[web,video,audio]"
-```
-
-Install optional model-backed tools as needed:
-
-```bash
-python -m pip install -e ".[vision-models,cut-detection,pose,action,transcription]"
-```
-
-DenseAV is heavier because it installs from the DenseAV Git repository:
-
-```bash
-python -m pip install -e ".[denseav]"
-```
-
-A full development install is available, but it pulls heavy model stacks:
-
-```bash
-python -m pip install -e ".[all]"
-```
-
-## Quick Start
-
-Run one tool from the CLI:
-
-```bash
-av-toolbox run video.motion \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+av-toolbox video motion \
+  data_segments/synthetic_hiphop_60s.mp4 \
   --output outputs/motion_demo \
   --sample-fps 5 \
-  --max-seconds 10
-```
+  --max-seconds 8
 
-Run the local Streamlit UI:
-
-```bash
 av-toolbox serve \
   --host 127.0.0.1 \
   --port 8501 \
-  --output-root outputs/web_runs \
-  --page-title "AV Toolbox Demo"
+  --output-root outputs/web_runs
+```
+
+Open `http://127.0.0.1:8501`, choose a tool, use the generated sample or upload a short local clip, and inspect the overlay, transcript/metrics, and downloadable artifacts in Results.
+
+## Optional Model Tools
+
+Install heavier extras only for the tools you plan to run:
+
+```bash
+# YOLO object detection/segmentation/pose and shot-type classification
+python -m pip install -e ".[vision-models]"
+
+# TransNetV2/PySceneDetect cut detection backends
+python -m pip install -e ".[cut-detection]"
+
+# PyTorchVideo action recognition
+python -m pip install -e ".[action]"
+
+# faster-whisper transcription
+python -m pip install -e ".[transcription]"
+```
+
+DenseAV is a separate heavyweight install because it needs the DenseAV Git package and checkpoint setup:
+
+```bash
+python -m pip install -e ".[denseav]"
+python -m pip install "git+https://github.com/mhamilton723/DenseAV.git"
 ```
 
 ## GPU And Model Cache
@@ -114,32 +120,26 @@ Recommended cache setup:
 
 ```bash
 export AV_TOOLBOX_CACHE_DIR=/mnt/models/av_toolbox_cache
-mkdir -p "$AV_TOOLBOX_CACHE_DIR"
+mkdir -p "$AV_TOOLBOX_CACHE_DIR/weights"
 ```
 
 You can also pass `--cache-dir` through CLI/runtime options. The default cache is under `~/.cache/av_toolbox/weights`; if that directory is root-owned or unwritable, set `AV_TOOLBOX_CACHE_DIR` to a writable path before running model-backed tools.
 
 DenseAV checkpoints require explicit setup. See [docs/denseav.md](docs/denseav.md).
 
-## Tool Catalog
-
-See [docs/tool-catalog.md](docs/tool-catalog.md) for every registered tool,
-input type, output artifacts, optional dependency extras, GPU/model
-requirements, CLI forms, and artifact naming rules.
-
-## Public Deployment
-
-The public deployment path is:
-
-```text
-GitHub README -> https://demo.yan-peng.com -> Cloudflare Tunnel -> Streamlit on DGX Spark -> av_toolbox + GPU
-```
-
-The Streamlit origin should stay bound to `127.0.0.1`; Cloudflare Tunnel provides the public URL. See [docs/cloudflare-demo.md](docs/cloudflare-demo.md) for tunnel, public-demo mode, systemd, and hardening notes.
-
 ## Developer Docs
 
 - [Developer README](docs/developer-readme.md): local development, CLI examples, tests, Docker, Python API, and web UI commands.
 - [Tool catalog](docs/tool-catalog.md): registered tools, CLI wrappers, inputs, outputs, and runtime controls.
 - [DenseAV setup](docs/denseav.md): optional DenseAV dependencies, checkpoint names, cache paths, and GPU flags.
-- [DGX + Cloudflare deployment](docs/cloudflare-demo.md): public demo mode, tunnel routing, and hardening notes.
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the dev
+setup, how to add a tool, the overlay style guide, and PR expectations. To report
+a security issue, follow [SECURITY.md](SECURITY.md) (please do not open a public
+issue).
+
+## Credits
+
+- Demo/sample footage is sourced from [this YouTube video](https://www.youtube.com/watch?v=THjXkQLy4wE) and used solely to demonstrate the tools' overlays. All rights to the original footage belong to its creator. The `av-toolbox` source code is licensed separately under the [MIT License](LICENSE).

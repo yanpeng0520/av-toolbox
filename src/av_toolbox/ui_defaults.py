@@ -85,7 +85,7 @@ RUN_WORKFLOWS: tuple[dict[str, Any], ...] = (
     },
     {
         "name": "Pose",
-        "description": "MediaPipe human pose landmark overlay.",
+        "description": "YOLOv8-pose multi-person landmark overlay.",
         "values": {"tool_name": "video.pose"},
     },
     {
@@ -97,11 +97,6 @@ RUN_WORKFLOWS: tuple[dict[str, Any], ...] = (
         "name": "Action Recognition",
         "description": "SlowFast/PyTorchVideo action labels over sampled windows.",
         "values": {"tool_name": "video.action_recognition"},
-    },
-    {
-        "name": "ST Action",
-        "description": "MMAction2 spatio-temporal action recognition when configured.",
-        "values": {"tool_name": "video.st_action"},
     },
     {
         "name": "Beats",
@@ -127,11 +122,6 @@ RUN_WORKFLOWS: tuple[dict[str, Any], ...] = (
         "name": "Transcription",
         "description": "Whisper speech transcription segments.",
         "values": {"tool_name": "audio.transcription"},
-    },
-    {
-        "name": "AV Sync",
-        "description": "Audio event to video motion correspondence.",
-        "values": {"tool_name": "av.sync_correspondence"},
     },
     {
         "name": "DenseAV",

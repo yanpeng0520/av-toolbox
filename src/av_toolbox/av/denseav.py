@@ -486,7 +486,7 @@ def _denseav_imports() -> tuple[Any, Any, Any, dict[str, Any], dict[str, Any], A
     except ImportError as exc:
         raise ImportError(
             "av.denseav requires the DenseAV package. "
-            "Install with: pip install -e '.[denseav]'"
+            "Install with: pip install \"git+https://github.com/mhamilton723/DenseAV.git\""
         ) from exc
 
     return (

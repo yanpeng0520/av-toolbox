@@ -5,12 +5,12 @@ Use this checklist when testing every tool from the local Streamlit UI.
 Start the full local UI, not public demo mode:
 
 ```bash
-cd /home/yanp/projects/av_toolbox
-source /home/yanp/.venvs/av-toolbox-demo/bin/activate
+cd /path/to/av-toolbox
+source .venv/bin/activate
 av-toolbox serve \
   --host 127.0.0.1 \
   --port 8501 \
-  --output-root /home/yanp/av-toolbox-demo/runs \
+  --output-root outputs/web_runs \
   --page-title "AV Toolbox Demo"
 ```
 
@@ -63,16 +63,14 @@ av-toolbox generate-demo-media --output-dir data_segments --duration 60
 | [ ] | `video.camera_shake` | Video | Source-video shake overlay MP4 on Output; timeline, CSV/report/config/log underneath. | |
 | [ ] | `video.object_detection` | Video | Source-video box overlay MP4 on Output; timeline, CSV/report/config/log underneath. Requires `vision-models`. | |
 | [ ] | `video.segmentation` | Video | Source-video segment overlay MP4 on Output; timeline, CSV/report/config/log underneath. Requires `vision-models`. | |
-| [ ] | `video.pose` | Video with people | Source-video pose overlay MP4 on Output; timeline, CSV/report/config/log underneath. Requires `pose`. | |
+| [ ] | `video.pose` | Video with people | Multi-person YOLOv8-pose skeleton overlay MP4 on Output (per-frame synced, one color per person, people-count timeline); timeline, CSV/report/config/log underneath. Requires `vision-models`. | |
 | [ ] | `video.shot_type` | Video | Source-video shot-label overlay MP4 on Output; timeline, CSV/report/config/log underneath. Requires `vision-models`. | |
 | [ ] | `video.action_recognition` | Video | Source-video action-label overlay MP4 on Output; timeline, CSV/report/config/log underneath. Requires `action`. | |
-| [ ] | `video.st_action` | Video | MMAction2 spatio-temporal action overlay MP4 on Output. Requires `config_path`, `checkpoint`, and MMAction2/MMCV. | |
 | [ ] | `audio.beat_detection` | Audio or video with audio | Beat/onset summary, overlay, and artifacts. | |
 | [ ] | `audio.energy` | Audio or video with audio | Energy/silence waveform overlay MP4 on Output; timeline, CSV/report/config/log underneath. | |
 | [ ] | `audio.event_detection` | Audio or video with audio | Event/region summary, overlay, and artifacts. | |
 | [ ] | `audio.music_phase` | Audio or video with audio | Phase segments, overlay, and artifacts. | |
 | [ ] | `audio.transcription` | Speech audio/video | Transcript segments and artifacts. Requires `transcription`. | |
-| [ ] | `av.sync_correspondence` | Video with audio | Sync matches, overlay, and artifacts. | |
 | [ ] | `av.denseav` | Video with audio | DenseAV summary and attention overlay. Requires `denseav` and checkpoint. | |
 
 ## After Each Tool

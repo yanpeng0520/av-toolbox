@@ -47,7 +47,6 @@ tools = [
     "audio.beat_detection",
     "audio.event_detection",
     "audio.music_phase",
-    "av.sync_correspondence",
 ]
 
 for tool_name in tools:
@@ -101,7 +100,6 @@ for TOOL in \
   audio.beat_detection \
   audio.event_detection \
   audio.music_phase \
-  av.sync_correspondence
 do
   SLUG=${TOOL//./_}
   av-toolbox run "$TOOL" "$MEDIA" \
@@ -151,15 +149,6 @@ av-toolbox audio music-phase \
   data_segments/synthetic_hiphop_60s.wav \
   --output outputs/audio_phase \
   --window-sec 4 \
-  --overlay-fps 5
-```
-
-```bash
-av-toolbox av sync-correspondence \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
-  --output outputs/av_sync \
-  --sample-fps 10 \
-  --max-seconds 20 \
   --overlay-fps 5
 ```
 

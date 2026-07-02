@@ -9,7 +9,7 @@ from av_toolbox.audio import (
     MusicPhaseTool,
     TranscriptionTool,
 )
-from av_toolbox.av import DenseAVTool, SyncCorrespondenceTool
+from av_toolbox.av import DenseAVTool
 from av_toolbox.core.registry import ToolRegistry, default_registry
 from av_toolbox.video import (
     ActionRecognitionTool,
@@ -23,7 +23,6 @@ from av_toolbox.video import (
     PoseTool,
     SegmentationTool,
     ShotTypeTool,
-    STActionTool,
 )
 
 
@@ -37,7 +36,6 @@ def register_builtin_tools(registry: ToolRegistry | None = None) -> ToolRegistry
         MusicPhaseTool(),
         TranscriptionTool(),
         DenseAVTool(),
-        SyncCorrespondenceTool(),
         ImageQualityTool(),
         CameraShakeTool(),
         CutDetectionTool(),
@@ -49,7 +47,6 @@ def register_builtin_tools(registry: ToolRegistry | None = None) -> ToolRegistry
         SegmentationTool(),
         ShotTypeTool(),
         ActionRecognitionTool(),
-        STActionTool(),
     ]
     for tool in tools:
         if tool.name not in target:

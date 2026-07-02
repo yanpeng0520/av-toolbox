@@ -1,104 +1,97 @@
 # av-toolbox Quickstart
 
-## Install
+This is the fresh-clone path for a local public-demo-quality run. It avoids private media, cloud services, and model checkpoints. It needs Python 3.10+ and FFmpeg on `PATH`.
+
+## 1. Install
 
 ```bash
-python -m pip install --upgrade pip
-python -m pip install -e ".[audio,video,av,dev]"
+git clone https://github.com/yanpeng0520/av-toolbox.git
+cd av-toolbox
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
+python -m pip install -e ".[web,audio,video]"
 ```
 
-Model-backed migrated tools are optional too: use `.[transcription]` for Whisper, `.[vision-models]` for YOLO and shot-type classification, `.[pose]` for MediaPipe, `.[action]` for PyTorchVideo action recognition, and `.[cut-detection]` for TransNetV2 and PySceneDetect.
-
-Use the heavier DenseAV extra only when you need DenseAV inference:
+After the package is published on PyPI, users who do not need an editable clone can install the released distribution instead:
 
 ```bash
-python -m pip install -e ".[denseav]"
-mkdir -p ~/.cache/av_toolbox/weights
+python -m pip install "av-analysis-toolbox[web,audio,video]"
 ```
 
-DenseAV checkpoints are not committed to the repository. By default,
-`av.denseav` expects weights under `~/.cache/av_toolbox/weights/`, or you can
-pass a local checkpoint with `--checkpoint`.
-
-Expected default DenseAV checkpoint paths:
-
-```text
-~/.cache/av_toolbox/weights/denseav_2head.ckpt
-~/.cache/av_toolbox/weights/denseav_sound.ckpt
-```
-
-## Smoke Test
+## 2. Generate Demo Media
 
 ```bash
-av-toolbox list-tools
-python -m pytest
+av-toolbox generate-demo-media --output-dir data_segments --duration 12
 ```
 
-The test suite is configured to collect the packaged `tests/` directory only.
-Legacy migration scripts under `testing/` are not part of CI.
+This writes a small synthetic WAV/MP4 pair under `data_segments/`. That directory is ignored by git so local media does not leak into commits.
 
-## Demo Media
-
-Curated sample videos live in Git LFS. Pull them after cloning:
-
-```bash
-git lfs install
-git lfs pull --include="data_segments/*.mp4"
-```
-
-You can also generate synthetic audio/video media locally:
-
-```bash
-av-toolbox generate-demo-media --output-dir data_segments --duration 60
-```
-
-## Run Tools
+## 3. Run One CLI Tool
 
 ```bash
 av-toolbox video motion \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/synthetic_hiphop_60s.mp4 \
   --output outputs/demo_motion \
-  --sample-fps 5
-
-av-toolbox audio beat-detection \
-  data_segments/synthetic_hiphop_60s.wav \
-  --output outputs/demo_beats
-
-av-toolbox av sync-correspondence \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
-  --output outputs/demo_sync
+  --sample-fps 5 \
+  --max-seconds 8
 ```
 
-## DenseAV
+Outputs are written under `outputs/`, also ignored by git. Each run produces standard artifacts such as timeline JSON, feature CSV, report HTML, config YAML, log text, and an overlay MP4 when the tool supports overlays.
+
+## 4. Start The Web UI
 
 ```bash
-av-toolbox av denseav \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
-  --output outputs/demo_denseav \
-  --checkpoint /path/to/denseav_2head.ckpt \
-  --sample-fps 25 \
-  --plot-size 720 \
-  --device cuda:0 \
-  --batch-size 4 \
-  --fp16
+av-toolbox serve \
+  --host 127.0.0.1 \
+  --port 8501 \
+  --output-root outputs/web_runs
 ```
 
-`--load-size` controls model inference resolution. `--plot-size` controls the
-rendered attention MP4 resolution.
+Open `http://127.0.0.1:8501`. Choose a Video, Audio, or Audio-Visual tool, use the generated sample or upload a short local clip, then inspect Results and download artifacts.
 
-## Web UI
+## 5. Optional Model Tools
+
+Install only the extras needed for the tools you want:
 
 ```bash
-av-toolbox serve --host 127.0.0.1 --port 8501
+python -m pip install -e ".[vision-models]"     # YOLO object/segmentation/pose and shot-type models
+python -m pip install -e ".[cut-detection]"     # TransNetV2/PySceneDetect
+python -m pip install -e ".[action]"            # PyTorchVideo action recognition
+python -m pip install -e ".[transcription]"     # faster-whisper transcription
 ```
 
-If Streamlit is installed, `serve` starts the Streamlit app. Otherwise it falls
-back to the built-in local web UI. Both UIs open with the generated synthetic
-demo clip and default outputs under `outputs/web_runs/latest`. Tool parameters
-use each tool's built-in defaults unless Advanced overrides are enabled; when
-you select a tool, Advanced shows that tool's own default parameter space.
+For model-backed tools, use a writable cache directory:
 
-Public demo mode for a Cloudflare Tunnel origin on the DGX Spark:
+```bash
+export AV_TOOLBOX_CACHE_DIR="$HOME/.cache/av_toolbox"
+mkdir -p "$AV_TOOLBOX_CACHE_DIR/weights"
+```
+
+DenseAV is heavier and needs the DenseAV Git package plus checkpoints:
+
+```bash
+python -m pip install -e ".[denseav]"
+python -m pip install "git+https://github.com/mhamilton723/DenseAV.git"
+```
+
+See [denseav.md](denseav.md) for checkpoint names, cache paths, and GPU notes.
+
+## Smoke Tests
+
+Install the lightweight test dependency first if you did not include `dev` during setup:
+
+```bash
+python -m pip install -e ".[dev]"
+av-toolbox list-tools
+python -m pytest tests/test_import.py tests/test_registry.py tests/test_cli.py
+```
+
+The full test suite is available with `python -m pytest`, but model-backed tests may need optional extras or cached weights.
+
+## Public Demo Mode
+
+Use bounded upload/runtime controls when exposing the UI beyond localhost:
 
 ```bash
 av-toolbox serve \
@@ -107,11 +100,10 @@ av-toolbox serve \
   --output-root /srv/av-toolbox-demo/runs \
   --public-demo \
   --public-max-seconds 20 \
-  --public-max-upload-mb 100
+  --public-max-upload-mb 10
 ```
 
-Use `--public-enable-denseav` only when the DGX has DenseAV dependencies and
-weights installed. See [cloudflare-demo.md](cloudflare-demo.md).
+Use `--public-enable-denseav` only after DenseAV dependencies and weights are installed.
 
 ## Docker
 
@@ -124,18 +116,10 @@ docker run --rm -p 8501:8501 \
   av-toolbox
 ```
 
-Build with DenseAV dependencies:
-
-```bash
-docker build -t av-toolbox:denseav --build-arg INCLUDE_DENSEAV=1 .
-```
-
-Keep model weights in the mounted cache or pass explicit checkpoint paths. Do
-not bake large weights into the image.
+Do not bake large media, generated outputs, logs, or model weights into the image.
 
 ## More Docs
 
-- [docs/tool-catalog.md](tool-catalog.md): registry names, CLI commands, and artifact outputs.
-- [docs/denseav.md](denseav.md): DenseAV checkpoint/cache setup and GPU notes.
-- [docs/examples.md](examples.md): Python API and CLI batch examples.
-- [docs/cloudflare-demo.md](cloudflare-demo.md): Cloudflare Tunnel and DGX Spark public demo deployment.
+- [tool-catalog.md](tool-catalog.md): registry names, CLI commands, artifacts, optional dependencies.
+- [examples.md](examples.md): Python API and CLI batch examples.
+- [denseav.md](denseav.md): DenseAV checkpoint/cache setup and GPU notes.

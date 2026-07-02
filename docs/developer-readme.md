@@ -1,11 +1,11 @@
 # av-toolbox Developer README
 
-This is the developer/operator README for local installs, CLI usage, tests, Docker,
-and the DGX Spark public-demo deployment. The public GitHub landing page lives in
-[../README.md](../README.md).
+This is the developer README for local installs, CLI usage, tests, Docker,
+and the web UI. The public GitHub landing page lives in [../README.md](../README.md).
 
 
-`av-toolbox` is the installable Python package for this project. The package
+`av-toolbox` is the project and CLI name. The PyPI distribution is
+`av-analysis-toolbox`; the import package remains `av_toolbox`. The package
 uses `src/av_toolbox` as its only importable package root and exposes one console
 entry point:
 
@@ -16,15 +16,6 @@ av-toolbox
 Existing folders such as `omni-video-pipeline/`, `testing/`, `data_segments/`,
 `data_samples/`, `multicam_samples/`, and `models/` are project assets or
 migration sources. They are not included as Python package contents.
-
-Public demo target:
-
-```text
-GitHub README -> https://demo.yan-peng.com -> Cloudflare Tunnel -> Streamlit on DGX Spark -> av_toolbox + GPU
-```
-
-See [cloudflare-demo.md](cloudflare-demo.md) for the public demo mode,
-Cloudflare Tunnel, and DGX Spark deployment workflow.
 
 ## Quick Start
 
@@ -43,7 +34,7 @@ av-toolbox list-tools
 av-toolbox generate-demo-media --output-dir data_segments --duration 60
 ```
 
-Optional migrated model tools use additional extras, for example `.[transcription]` for Whisper, `.[vision-models]` for YOLO and shot-type classification, `.[pose]` for MediaPipe, `.[action]` for PyTorchVideo action recognition, and `.[cut-detection]` for TransNetV2 and PySceneDetect support.
+Optional migrated model tools use additional extras, for example `.[transcription]` for Whisper, `.[vision-models]` for YOLO pose/object/segmentation and shot-type classification, `.[action]` for PyTorchVideo action recognition, and `.[cut-detection]` for TransNetV2 and PySceneDetect support.
 
 Requires `ffmpeg` on PATH for video/audio media operations.
 
@@ -87,10 +78,6 @@ av-toolbox audio music-phase \
 Run the packaged audio-visual tools:
 
 ```bash
-av-toolbox av sync-correspondence \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
-  --output outputs/demo_sync
-
 av-toolbox av denseav \
   data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
   --output outputs/demo_denseav_clever_cat \
@@ -99,7 +86,7 @@ av-toolbox av denseav \
   --device auto
 ```
 
-DenseAV is an optional heavy dependency. Attention MP4s default to a 720px render size while keeping model inference at 224px; use `--plot-size` or `--load-size` to override those separately. Install it with `pip install -e ".[denseav]"`
+DenseAV is an optional heavy dependency. Attention MP4s default to a 720px render size while keeping model inference at 224px; use `--plot-size` or `--load-size` to override those separately. Install runtime prerequisites with `pip install -e ".[denseav]"`, then install DenseAV with `pip install "git+https://github.com/mhamilton723/DenseAV.git"`
 and place model weights in the unified cache before running inference:
 
 ```bash
@@ -137,8 +124,8 @@ inputs and outputs, and download declared artifacts.
 
 ## Public Demo Mode
 
-The public deployment path is intended to run Streamlit on the DGX Spark behind
-Cloudflare Tunnel. Start the origin app on a local-only listener:
+Public demo mode starts a bounded Streamlit origin. Keep the listener local
+when placing it behind your own tunnel, proxy, or access layer:
 
 ```bash
 av-toolbox serve \
@@ -148,11 +135,11 @@ av-toolbox serve \
   --page-title "AV Toolbox Demo" \
   --public-demo \
   --public-max-seconds 20 \
-  --public-max-upload-mb 100
+  --public-max-upload-mb 10
 ```
 
 Use `--public-enable-denseav` only after DenseAV dependencies and weights are
-installed on the DGX. Public mode starts with a generated sample clip, also
+installed. Public mode starts with a generated sample clip, also
 accepts uploads, exposes only bounded demo settings, hides local filesystem and
 runtime controls, caps uploads and analyzed duration, creates server-side output
 directories, and serializes public Streamlit runs.
@@ -193,8 +180,6 @@ quickstart.
 - [denseav.md](denseav.md): DenseAV install, exact checkpoint filenames, cache
   locations, GPU flags, and troubleshooting.
 - [examples.md](examples.md): Python API examples and CLI batch examples.
-- [cloudflare-demo.md](cloudflare-demo.md): public demo mode on DGX Spark behind
-  Cloudflare Tunnel and optional Cloudflare Access.
 
 ## Python API
 
@@ -215,9 +200,9 @@ print(result.timeline_json)
 
 The package now includes the registry/runtime foundation plus classical video
 quality and motion tools, audio feature/event/phase tools, audio-visual sync and
-DenseAV tools, and native wrappers for migrated Whisper, YOLO, MediaPipe,
+DenseAV tools, and native wrappers for migrated Whisper, YOLO pose/object/segmentation,
 shot-type, cut-detection, and action-recognition capabilities. Model-backed
 tools are registered by default but import their optional dependencies only when
-run. Use `.[transcription]`, `.[vision-models]`, `.[pose]`, `.[action]`,
-`.[cut-detection]`, or `.[denseav]` for the heavier stacks.
+run. Use `.[transcription]`, `.[vision-models]`, `.[action]`,
+`.[cut-detection]`, or `.[denseav]` for heavier runtime prerequisites. DenseAV itself is installed from `git+https://github.com/mhamilton723/DenseAV.git`.
 

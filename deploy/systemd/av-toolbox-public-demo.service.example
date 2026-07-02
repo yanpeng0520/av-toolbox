@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/home/yanp/projects/av_toolbox
+WorkingDirectory=/srv/av-toolbox
 Environment=PYTHONUNBUFFERED=1
 Environment=AV_TOOLBOX_PUBLIC_DEMO=1
 Environment=AV_TOOLBOX_PUBLIC_MAX_SECONDS=20
@@ -13,7 +13,7 @@ Environment=AV_TOOLBOX_PUBLIC_MAX_UPLOAD_MB=100
 Environment="AV_TOOLBOX_PAGE_TITLE=AV Toolbox Demo"
 # Set to 1 only after DenseAV dependencies and weights are installed.
 Environment=AV_TOOLBOX_PUBLIC_ENABLE_DENSEAV=0
-Environment=AV_TOOLBOX_CACHE_DIR=/home/yanp/.cache/av_toolbox
+Environment=AV_TOOLBOX_CACHE_DIR=/srv/av-toolbox/.cache/av_toolbox
 ExecStart=/usr/bin/env av-toolbox serve --host 127.0.0.1 --port 8501 --output-root /srv/av-toolbox-demo/runs --public-demo
 Restart=on-failure
 RestartSec=5

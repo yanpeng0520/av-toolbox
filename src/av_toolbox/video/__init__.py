@@ -11,7 +11,6 @@ from av_toolbox.video.optical_flow import OpticalFlowTool
 from av_toolbox.video.pose import PoseTool
 from av_toolbox.video.segmentation import SegmentationTool
 from av_toolbox.video.shot_type import ShotTypeTool
-from av_toolbox.video.st_action import STActionTool
 
 __all__ = [
     "ActionRecognitionTool",
@@ -25,5 +24,4 @@ __all__ = [
     "PoseTool",
     "SegmentationTool",
     "ShotTypeTool",
-    "STActionTool",
 ]

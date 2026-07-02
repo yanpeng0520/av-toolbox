@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 import threading
 from http.server import ThreadingHTTPServer
 from pathlib import Path
@@ -11,7 +12,7 @@ from av_toolbox.core.result import AVResult
 from av_toolbox.public_demo import public_run_kwargs, public_tool_name, public_workflow_names
 from av_toolbox.ui_defaults import category_from_label, default_form_values, default_workflow_name, resolve_existing_input_path, tool_names_for_category, tool_type_labels
 from av_toolbox.web import build_streamlit_command, web_app_path
-from av_toolbox.web_app import artifact_items, build_run_kwargs, tool_choices, tool_parameter_defaults, _render_overlay_panel, _render_run_complete, _render_run_progress, _render_running_output_panel, _run_local
+from av_toolbox.web_app import artifact_items, build_run_kwargs, tool_choices, tool_parameter_defaults, _normalize_streamlit_sys_path, _render_overlay_panel, _render_run_complete, _render_run_progress, _render_running_output_panel, _run_local, _transcript_text_from_result
 from av_toolbox.web_server import FormField
 from av_toolbox.web_server import artifact_items as server_artifact_items
 from av_toolbox.web_server import (
@@ -23,6 +24,37 @@ from av_toolbox.web_server import (
     resolve_output_dir,
     resolve_public_input_path,
 )
+
+
+def test_streamlit_sys_path_normalizer_prevents_av_shadowing() -> None:
+    package_dir = web_app_path().parent
+    src_dir = package_dir.parent
+    original_path = list(sys.path)
+    try:
+        sys.path[:] = [str(package_dir), str(src_dir), *original_path]
+        _normalize_streamlit_sys_path()
+
+        assert str(package_dir) not in sys.path
+        assert str(src_dir) in sys.path
+    finally:
+        sys.path[:] = original_path
+
+
+def test_transcription_result_extracts_timestamped_transcript(tmp_path) -> None:
+    timeline = tmp_path / "transcription_timeline.json"
+    timeline.write_text(json.dumps({
+        "segments": [
+            {"start": 0.0, "end": 1.25, "text": " Hello"},
+            {"start": 61.5, "end": 62.75, "text": "world"},
+        ]
+    }))
+
+    transcript = _transcript_text_from_result({
+        "tool_name": "audio.transcription",
+        "timeline_json": str(timeline),
+    })
+
+    assert transcript == "00:00.000 - 00:01.250  Hello\n01:01.500 - 01:02.750  world"
 
 
 def test_streamlit_command_targets_packaged_web_app() -> None:
@@ -39,6 +71,18 @@ def test_streamlit_command_targets_packaged_web_app() -> None:
     assert "--server.port" in command
     assert "8600" in command
     assert command[-2:] == ["--output-root", "outputs/ui"]
+
+
+def test_public_streamlit_command_defaults_to_10mb_origin_upload_cap() -> None:
+    command = build_streamlit_command(
+        host="127.0.0.1",
+        port=8501,
+        output_root="/srv/demo",
+        public_demo=True,
+    )
+
+    assert command[command.index("--server.maxUploadSize") + 1] == "10"
+    assert command[command.index("--public-max-upload-mb") + 1] == "10"
 
 
 def test_public_streamlit_command_enforces_demo_args() -> None:
@@ -77,21 +121,17 @@ def test_public_workflows_keep_denseav_opt_in() -> None:
         "Pose",
         "Shot Type",
         "Action Recognition",
-        "ST Action",
         "Beats",
         "Audio Energy",
         "Audio Events",
         "Music Phase",
         "Transcription",
-        "AV Sync",
     }
     assert set(public_workflow_names()) == expected_public_names
     assert "DenseAV" not in public_workflow_names()
-    assert public_tool_name("AV Sync") == "av.sync_correspondence"
     assert public_tool_name("Image Quality") == "video.image_quality"
     assert public_tool_name("Blur Exposure") == "video.blur_exposure"
     assert public_tool_name("Obstruction") == "video.obstruction"
-    assert public_tool_name("ST Action") == "video.st_action"
     try:
         public_tool_name("DenseAV")
     except ValueError:
@@ -125,14 +165,14 @@ def test_tool_type_grouping_uses_registry_categories() -> None:
     records = [
         {"name": "video.motion", "category": "video", "description": ""},
         {"name": "audio.energy", "category": "audio", "description": ""},
-        {"name": "av.sync_correspondence", "category": "av", "description": ""},
+        {"name": "av.denseav", "category": "av", "description": ""},
     ]
 
     assert tool_type_labels(records) == ["Video", "Audio", "Audio-Visual"]
     assert category_from_label("Audio-Visual") == "av"
     assert tool_names_for_category(records, "video") == ["video.motion"]
     assert tool_names_for_category(records, "audio") == ["audio.energy"]
-    assert tool_names_for_category(records, "av") == ["av.sync_correspondence"]
+    assert tool_names_for_category(records, "av") == ["av.denseav"]
 
 
 def test_build_run_kwargs_keeps_tool_defaults_until_overridden() -> None:
@@ -418,7 +458,6 @@ def test_public_web_page_hides_local_filesystem_controls(tmp_path) -> None:
     assert "<h1>Demo Lab</h1>" in html
     assert "av-toolbox" in html
     assert "Workflow" in html
-    assert "AV Sync" in html
     assert "Sample video" in html
     assert "Upload" in html
     assert "Analyze Seconds" in html

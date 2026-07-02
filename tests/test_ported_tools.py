@@ -25,7 +25,6 @@ NEW_TOOL_NAMES = {
     "video.pose",
     "video.segmentation",
     "video.shot_type",
-    "video.st_action",
 }
 
 

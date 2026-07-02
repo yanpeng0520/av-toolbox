@@ -28,7 +28,6 @@ def build_parser() -> argparse.ArgumentParser:
     av_parser = subcommands.add_parser("av", help="Run audio-visual tools.")
     av_subcommands = av_parser.add_subparsers(dest="av_command", required=True)
     _add_tool_command(av_subcommands, "denseav", "Run av.denseav.")
-    _add_tool_command(av_subcommands, "sync-correspondence", "Run av.sync_correspondence.")
 
     audio_parser = subcommands.add_parser("audio", help="Run audio tools.")
     audio_subcommands = audio_parser.add_subparsers(dest="audio_command", required=True)
@@ -51,7 +50,6 @@ def build_parser() -> argparse.ArgumentParser:
     _add_tool_command(video_subcommands, "pose", "Run video.pose.")
     _add_tool_command(video_subcommands, "segmentation", "Run video.segmentation.")
     _add_tool_command(video_subcommands, "shot-type", "Run video.shot_type.")
-    _add_tool_command(video_subcommands, "st-action", "Run video.st_action.")
 
     demo_parser = subcommands.add_parser("generate-demo-media", help="Generate synthetic demo WAV/MP4 media.")
     demo_parser.add_argument("--output-dir", default="data_segments")
@@ -144,7 +142,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "av":
         tool_name = {
             "denseav": "av.denseav",
-            "sync-correspondence": "av.sync_correspondence",
         }[args.av_command]
         result = _run_from_args(tool_name, args)
         print(json.dumps(result.to_dict(), indent=2))
@@ -175,7 +172,6 @@ def main(argv: Sequence[str] | None = None) -> int:
             "pose": "video.pose",
             "segmentation": "video.segmentation",
             "shot-type": "video.shot_type",
-            "st-action": "video.st_action",
         }[args.video_command]
         result = _run_from_args(tool_name, args)
         print(json.dumps(result.to_dict(), indent=2))

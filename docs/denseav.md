@@ -10,10 +10,12 @@ From the repository root:
 
 ```bash
 python -m pip install -e ".[denseav]"
+python -m pip install "git+https://github.com/mhamilton723/DenseAV.git"
 ```
 
-The DenseAV extra installs PyAV, Pillow, PyTorch packages, and DenseAV from its
-GitHub source declared in `pyproject.toml`.
+The DenseAV extra installs PyAV, Pillow, and PyTorch packages. Install the
+DenseAV package from its GitHub source separately so `av-toolbox` package
+metadata stays compatible with package indexes.
 
 ## Checkpoint Names And Locations
 
@@ -157,7 +159,8 @@ does not download DenseAV weights; it only resolves and verifies local files.
 
 ## Troubleshooting
 
-- `ImportError: av.denseav requires ...`: install `python -m pip install -e ".[denseav]"`.
+- `ImportError: av.denseav requires torch/PyAV/...`: install `python -m pip install -e ".[denseav]"`.
+- `ImportError: av.denseav requires the DenseAV package`: install `python -m pip install "git+https://github.com/mhamilton723/DenseAV.git"`.
 - `model weight not found in cache`: copy the expected checkpoint into `~/.cache/av_toolbox/weights/`, set `AV_TOOLBOX_CACHE_DIR`, pass `--cache-dir`, or pass `--checkpoint`.
 - `Requested DenseAV device 'cuda:0', but CUDA is unavailable`: use `--device cpu` or run on a CUDA-enabled machine.
 - No attention overlay: sample at least two frames by increasing `--max-seconds` or `--sample-fps`.

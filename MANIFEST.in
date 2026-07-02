@@ -18,6 +18,14 @@ prune models
 prune build
 prune dist
 prune data_segments
+prune docs/assets
+
+# Local/private deployment notes (also gitignored).
+exclude docs/cloudflare-demo.md
+exclude docs/streamlit-demo-overview.md
+
+global-exclude *.gif
+global-exclude *.mp4
 
 global-exclude __pycache__
 global-exclude *.py[cod]

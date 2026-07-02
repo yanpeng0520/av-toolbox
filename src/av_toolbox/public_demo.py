@@ -12,7 +12,7 @@ from av_toolbox.ui_defaults import RUN_WORKFLOWS, workflow_by_name
 
 
 DEFAULT_PUBLIC_MAX_SECONDS = 20.0
-DEFAULT_PUBLIC_MAX_UPLOAD_MB = 100
+DEFAULT_PUBLIC_MAX_UPLOAD_MB = 10
 DEFAULT_LOCAL_PAGE_TITLE = "Video Analysis Orchestrator"
 DEFAULT_PUBLIC_PAGE_TITLE = "AV Toolbox Demo"
 PUBLIC_OUTPUT_SUBDIR = "public_runs"
@@ -34,13 +34,11 @@ PUBLIC_BASE_WORKFLOW_NAMES = (
     "Pose",
     "Shot Type",
     "Action Recognition",
-    "ST Action",
     "Beats",
     "Audio Energy",
     "Audio Events",
     "Music Phase",
     "Transcription",
-    "AV Sync",
 )
 PUBLIC_DENSEAV_WORKFLOW_NAMES = ("DenseAV",)
 

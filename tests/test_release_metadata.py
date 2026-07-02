@@ -14,7 +14,7 @@ def test_public_package_metadata_is_declared() -> None:
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
     project = pyproject["project"]
 
-    assert project["name"] == "av-toolbox"
+    assert project["name"] == "av-analysis-toolbox"
     assert project["license"] == "MIT"
     assert project["license-files"] == ["LICENSE"]
     assert project["authors"]
@@ -54,3 +54,11 @@ def test_lfs_tracks_video_samples() -> None:
     attributes = (ROOT / ".gitattributes").read_text()
 
     assert "data_segments/*.mp4 filter=lfs diff=lfs merge=lfs -text" in attributes
+
+def test_optional_dependencies_are_package_index_friendly() -> None:
+    pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text())
+
+    for extra, requirements in pyproject["project"]["optional-dependencies"].items():
+        for requirement in requirements:
+            assert "git+" not in requirement, f"{extra} contains direct Git dependency: {requirement}"
+            assert " @ http" not in requirement, f"{extra} contains direct URL dependency: {requirement}"

@@ -10,6 +10,11 @@ from av_toolbox.core.media_io import iter_sampled_frames, read_video_metadata
 from av_toolbox.core.result import AVResult
 from av_toolbox.core.simple_outputs import write_standard_artifacts
 from av_toolbox.video.source_overlay import render_source_video_overlay
+from av_toolbox.video.yolo_utils import (
+    resolve_yolo_device,
+    resolve_yolo_model_path,
+    yolo_predict_with_auto_cpu_retry,
+)
 
 
 class ObjectDetectionTool(BaseTool):
@@ -42,13 +47,13 @@ class ObjectDetectionTool(BaseTool):
             raise ValueError("video.object_detection requires input_path")
         YOLO = _import_yolo()
         metadata = read_video_metadata(input_path)
-        model = YOLO(model_name or "yolov8n.pt")
+        model_label = model_name or "yolov8n.pt"
+        model_path = resolve_yolo_model_path(model_label, context.cache)
+        model = YOLO(model_path)
 
         rows = []
         events = []
-        device_arg = context.hardware.resolved_device()
-        if not device_arg.startswith("cuda"):
-            device_arg = "cpu"
+        device_arg = resolve_yolo_device(context.hardware)
         for frame_idx, timestamp, frame in iter_sampled_frames(
             input_path,
             sample_fps=sample_fps,
@@ -61,7 +66,7 @@ class ObjectDetectionTool(BaseTool):
             }
             if image_size:
                 kwargs["imgsz"] = image_size
-            result = model.predict(frame, **kwargs)[0]
+            result = yolo_predict_with_auto_cpu_retry(model, frame, kwargs)
             names = getattr(result, "names", getattr(model, "names", {}))
             if getattr(result, "boxes", None) is None:
                 continue
@@ -95,7 +100,7 @@ class ObjectDetectionTool(BaseTool):
         summary = _label_summary(rows)
         summary.update({
             "detection_count": len(rows),
-            "model": model_name or "yolov8n.pt",
+            "model": model_label,
         })
         timeline_payload = {
             "tool_name": self.name,
@@ -109,9 +114,11 @@ class ObjectDetectionTool(BaseTool):
             "tool_name": self.name,
             "sample_fps": sample_fps,
             "max_seconds": max_seconds,
-            "model_name": model_name or "yolov8n.pt",
+            "model_name": model_label,
+            "model_path": model_path,
             "confidence": confidence,
             "image_size": image_size,
+            "device": device_arg,
             "export_overlay": export_overlay,
             "overlay_fps": overlay_fps,
             "overlay_width": overlay_width,
@@ -142,6 +149,7 @@ class ObjectDetectionTool(BaseTool):
             log_lines=[
                 f"tool={self.name}",
                 f"input={input_path}",
+                f"device={device_arg}",
                 f"detections={len(rows)}",
             ],
         )

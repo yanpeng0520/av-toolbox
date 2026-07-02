@@ -1,4 +1,0 @@
-interface:
-  display_name: "AV Toolbox"
-  short_description: "Build and maintain AV analysis tools"
-  default_prompt: "Use $av-toolbox to make a focused, tested change in the AV Toolbox project."
