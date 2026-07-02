@@ -7,7 +7,7 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[audio,video,av,dev]"
 ```
 
-Model-backed migrated tools are optional too: use `.[transcription]` for Whisper, `.[vision-models]` for YOLO and shot-type classification, `.[pose]` for MediaPipe, `.[action]` for PyTorchVideo action recognition, and `.[cut-detection]` for PySceneDetect.
+Model-backed migrated tools are optional too: use `.[transcription]` for Whisper, `.[vision-models]` for YOLO and shot-type classification, `.[pose]` for MediaPipe, `.[action]` for PyTorchVideo action recognition, and `.[cut-detection]` for TransNetV2 and PySceneDetect.
 
 Use the heavier DenseAV extra only when you need DenseAV inference:
 

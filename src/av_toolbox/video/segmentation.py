@@ -9,6 +9,7 @@ from av_toolbox.core.base_tool import BaseTool, ToolRunContext
 from av_toolbox.core.media_io import iter_sampled_frames, read_video_metadata
 from av_toolbox.core.result import AVResult
 from av_toolbox.core.simple_outputs import write_standard_artifacts
+from av_toolbox.video.source_overlay import render_source_video_overlay
 
 
 class SegmentationTool(BaseTool):
@@ -31,6 +32,10 @@ class SegmentationTool(BaseTool):
         export_json: bool = True,
         export_csv: bool = True,
         export_report: bool = True,
+        export_overlay: bool = True,
+        overlay_fps: float | None = 15.0,
+        overlay_width: int = 960,
+        overlay_height: int | None = None,
         **_: Any,
     ) -> AVResult:
         if input_path is None:
@@ -114,8 +119,12 @@ class SegmentationTool(BaseTool):
             "model_name": model_name or "yolov8n-seg.pt",
             "confidence": confidence,
             "image_size": image_size,
+            "export_overlay": export_overlay,
+            "overlay_fps": overlay_fps,
+            "overlay_width": overlay_width,
+            "overlay_height": overlay_height,
         }
-        _, result = write_standard_artifacts(
+        artifacts, result = write_standard_artifacts(
             tool_name=self.name,
             input_path=input_path,
             context=context,
@@ -144,6 +153,21 @@ class SegmentationTool(BaseTool):
                 f"segments={len(rows)}",
             ],
         )
+        if export_overlay:
+            result.overlay_path = render_source_video_overlay(
+                input_path=input_path,
+                output_path=artifacts.overlay_path,
+                rows=rows,
+                events=events,
+                duration=metadata.duration,
+                workspace=context.workspace,
+                tool_label="segmentation",
+                fps=overlay_fps or 15.0,
+                width=overlay_width,
+                height=overlay_height,
+                mode="segments",
+                timeline_style="none",
+            )
         return result
 
 

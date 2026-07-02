@@ -69,6 +69,8 @@ action = [
     "torch>=2.0",
     "torchvision>=0.15",
     "pytorchvideo>=0.1",
+    "fvcore>=0.1.5",
+    "iopath>=0.1.10",
 ]
 vision-models = [
     "ultralytics>=8.0",
@@ -78,6 +80,7 @@ vision-models = [
     "transformers>=4.40",
 ]
 cut-detection = [
+    "transnetv2-pytorch>=1.0",
     "scenedetect>=0.6",
 ]
 av = [
@@ -116,9 +119,12 @@ all = [
     "torchvision>=0.15",
     "torchaudio>=2.0",
     "pytorchvideo>=0.1",
+    "fvcore>=0.1.5",
+    "iopath>=0.1.10",
     "ultralytics>=8.0",
     "transformers>=4.40",
     "mediapipe>=0.10",
+    "transnetv2-pytorch>=1.0",
     "scenedetect>=0.6",
     "denseav @ git+https://github.com/mhamilton723/DenseAV.git",
     "streamlit>=1.35",
@@ -128,6 +134,9 @@ all = [
 
 [project.scripts]
 av-toolbox = "av_toolbox.cli:main"
+
+[tool.setuptools.package-data]
+av_toolbox = ["resources/*.txt"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

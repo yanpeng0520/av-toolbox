@@ -41,9 +41,9 @@ import av_toolbox
 
 media = Path("data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4")
 tools = [
-    "video.blur_exposure",
+    "video.image_quality",
     "video.motion",
-    "video.shot_boundary",
+    "video.cut_detection",
     "audio.beat_detection",
     "audio.event_detection",
     "audio.music_phase",
@@ -95,9 +95,9 @@ result = av_toolbox.run_tool(
 MEDIA=data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4
 
 for TOOL in \
-  video.blur_exposure \
+  video.image_quality \
   video.motion \
-  video.shot_boundary \
+  video.cut_detection \
   audio.beat_detection \
   audio.event_detection \
   audio.music_phase \
@@ -116,9 +116,9 @@ done
 ## CLI: Category Commands
 
 ```bash
-av-toolbox video blur-exposure \
+av-toolbox video image-quality \
   data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
-  --output outputs/video_blur \
+  --output outputs/video_image_quality \
   --sample-fps 5 \
   --max-seconds 10
 
@@ -128,10 +128,9 @@ av-toolbox video motion \
   --sample-fps 5 \
   --max-seconds 10
 
-av-toolbox video shot-boundary \
+av-toolbox video cut-detection \
   data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
-  --output outputs/video_shots \
-  --sample-fps 5 \
+  --output outputs/video_cuts \
   --max-seconds 10
 ```
 

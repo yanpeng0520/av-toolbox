@@ -9,9 +9,9 @@ from urllib.request import Request, urlopen
 
 from av_toolbox.core.result import AVResult
 from av_toolbox.public_demo import public_run_kwargs, public_tool_name, public_workflow_names
-from av_toolbox.ui_defaults import default_form_values, default_workflow_name, resolve_existing_input_path
+from av_toolbox.ui_defaults import category_from_label, default_form_values, default_workflow_name, resolve_existing_input_path, tool_names_for_category, tool_type_labels
 from av_toolbox.web import build_streamlit_command, web_app_path
-from av_toolbox.web_app import artifact_items, build_run_kwargs, tool_choices, tool_parameter_defaults
+from av_toolbox.web_app import artifact_items, build_run_kwargs, tool_choices, tool_parameter_defaults, _render_overlay_panel, _render_run_complete, _render_run_progress, _render_running_output_panel, _run_local
 from av_toolbox.web_server import FormField
 from av_toolbox.web_server import artifact_items as server_artifact_items
 from av_toolbox.web_server import (
@@ -19,6 +19,7 @@ from av_toolbox.web_server import (
     make_handler,
     render_page,
     render_public_page,
+    render_result_details,
     resolve_output_dir,
     resolve_public_input_path,
 )
@@ -62,8 +63,35 @@ def test_public_streamlit_command_enforces_demo_args() -> None:
 
 
 def test_public_workflows_keep_denseav_opt_in() -> None:
+    expected_public_names = {
+        "Motion",
+        "Image Quality",
+        "Blur Exposure",
+        "Shot Boundaries",
+        "Obstruction",
+        "Optical Flow",
+        "Foreground Motion",
+        "Camera Shake",
+        "Object Detection",
+        "Segmentation",
+        "Pose",
+        "Shot Type",
+        "Action Recognition",
+        "ST Action",
+        "Beats",
+        "Audio Energy",
+        "Audio Events",
+        "Music Phase",
+        "Transcription",
+        "AV Sync",
+    }
+    assert set(public_workflow_names()) == expected_public_names
     assert "DenseAV" not in public_workflow_names()
     assert public_tool_name("AV Sync") == "av.sync_correspondence"
+    assert public_tool_name("Image Quality") == "video.image_quality"
+    assert public_tool_name("Blur Exposure") == "video.blur_exposure"
+    assert public_tool_name("Obstruction") == "video.obstruction"
+    assert public_tool_name("ST Action") == "video.st_action"
     try:
         public_tool_name("DenseAV")
     except ValueError:
@@ -76,12 +104,35 @@ def test_public_workflows_keep_denseav_opt_in() -> None:
     assert public_run_kwargs(max_seconds=9)["max_seconds"] == 9
 
 
+def test_shot_boundaries_workflow_uses_transnetv2_cut_detection() -> None:
+    values = default_form_values(workflow_name="Shot Boundaries")
+
+    assert values["tool_name"] == "video.cut_detection"
+    assert values["backend"] == "transnetv2"
+    assert public_tool_name("Shot Boundaries") == "video.cut_detection"
+    assert tool_parameter_defaults("video.cut_detection")["backend"] == "transnetv2"
+
+
 def test_web_tool_choices_use_registry() -> None:
     names = tool_choices()
 
     assert "audio.beat_detection" in names
     assert "av.denseav" in names
     assert "video.motion" in names
+
+
+def test_tool_type_grouping_uses_registry_categories() -> None:
+    records = [
+        {"name": "video.motion", "category": "video", "description": ""},
+        {"name": "audio.energy", "category": "audio", "description": ""},
+        {"name": "av.sync_correspondence", "category": "av", "description": ""},
+    ]
+
+    assert tool_type_labels(records) == ["Video", "Audio", "Audio-Visual"]
+    assert category_from_label("Audio-Visual") == "av"
+    assert tool_names_for_category(records, "video") == ["video.motion"]
+    assert tool_names_for_category(records, "audio") == ["audio.energy"]
+    assert tool_names_for_category(records, "av") == ["av.sync_correspondence"]
 
 
 def test_build_run_kwargs_keeps_tool_defaults_until_overridden() -> None:
@@ -122,6 +173,144 @@ def test_build_run_kwargs_only_sends_explicit_overrides() -> None:
         "fp16": True,
         "export_csv": False,
     }
+
+
+def test_streamlit_local_run_does_not_mutate_output_dir_widget_key(tmp_path, monkeypatch) -> None:
+    class GuardedSessionState(dict):
+        def __setitem__(self, key, value):
+            if key == "output_dir":
+                raise AssertionError("output_dir widget key was mutated")
+            super().__setitem__(key, value)
+
+    class FakeStatus:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    class FakeStreamlit:
+        def __init__(self):
+            self.session_state = GuardedSessionState({"output_dir": "widget-owned"})
+
+        def status(self, *_args, **_kwargs):
+            return FakeStatus()
+
+        def success(self, message):
+            self.success_message = message
+
+        def error(self, message):
+            raise AssertionError(message)
+
+    def fake_run_tool(tool_name, *, input_path, output_dir, **_kwargs):
+        timeline = output_dir / "timeline.json"
+        timeline.write_text("{}")
+        return AVResult(tool_name=tool_name, input_path=input_path, output_dir=output_dir, timeline_json=timeline)
+
+    st = FakeStreamlit()
+    monkeypatch.setattr("av_toolbox.web_app.av_toolbox.run_tool", fake_run_tool)
+
+    ok = _run_local(
+        st,
+        "video.motion",
+        tmp_path / "input.mp4",
+        str(tmp_path / "runs" / "motion"),
+        tmp_path / "runs",
+    )
+
+    assert ok is True
+    assert st.session_state["output_dir"] == "widget-owned"
+    assert st.session_state["_last_output_dir"].endswith("motion")
+    assert st.session_state["last_result"]["tool_name"] == "video.motion"
+    assert st.success_message == "Done"
+
+
+def test_streamlit_progress_banner_renders_visible_status() -> None:
+    class FakeSlot:
+        def markdown(self, body, *, unsafe_allow_html):
+            self.body = body
+            self.unsafe_allow_html = unsafe_allow_html
+
+    slot = FakeSlot()
+
+    _render_run_progress(slot, "video.motion")
+
+    assert slot.unsafe_allow_html is True
+    assert "av-run-progress" in slot.body
+    assert 'aria-valuemin="0"' in slot.body
+    assert 'aria-valuemax="100"' in slot.body
+    assert "0%" in slot.body
+    assert "100%" not in slot.body
+    assert "Running video.motion" not in slot.body
+
+    _render_run_complete(slot, "video.motion", success=True)
+    assert 'aria-valuenow="100"' in slot.body
+    assert "100%" in slot.body
+    assert "Done: video.motion" not in slot.body
+
+
+def test_streamlit_running_output_panel_keeps_input_context_visible() -> None:
+    class FakeStreamlit:
+        def __init__(self):
+            self.calls = []
+
+        def subheader(self, value):
+            self.calls.append(("subheader", value))
+
+        def markdown(self, value, *, unsafe_allow_html):
+            self.calls.append(("markdown", value, unsafe_allow_html))
+
+    st = FakeStreamlit()
+
+    _render_running_output_panel(st, "video.motion")
+
+    assert ("subheader", "Output") in st.calls
+    markdown_calls = [call for call in st.calls if call[0] == "markdown"]
+    assert markdown_calls
+    body = markdown_calls[0][1]
+    assert markdown_calls[0][2] is True
+    assert "av-output-progress" in body
+    assert "av-progress-track" not in body
+    assert "av-run-progress" not in body
+    assert "Output will appear here when ready." in body
+    assert "Running video.motion" not in body
+    assert "input preview stays visible" not in body
+
+
+def test_streamlit_output_panel_falls_back_to_source_video_when_no_overlay(tmp_path) -> None:
+    class FakeStreamlit:
+        def __init__(self):
+            self.calls = []
+
+        def subheader(self, value):
+            self.calls.append(("subheader", value))
+
+        def video(self, value):
+            self.calls.append(("video", value))
+
+        def audio(self, value):
+            self.calls.append(("audio", value))
+
+        def caption(self, value):
+            self.calls.append(("caption", value))
+
+        def code(self, value):
+            self.calls.append(("code", value))
+
+        def info(self, value):
+            self.calls.append(("info", value))
+
+    source = tmp_path / "source.mp4"
+    source.write_bytes(b"not a real mp4, only path existence matters here")
+    st = FakeStreamlit()
+
+    _render_overlay_panel(
+        st,
+        {"tool_name": "video.motion", "input_path": str(source), "overlay_path": None},
+    )
+
+    assert ("video", str(source)) in st.calls
+    assert any(call[0] == "caption" and "did not produce an overlay MP4" in call[1] for call in st.calls)
 
 
 def test_ui_defaults_keep_default_media_path_and_latest_output(tmp_path) -> None:
@@ -165,13 +354,16 @@ def test_tool_parameter_defaults_follow_selected_tool_signature() -> None:
     assert denseav["plot_size"] == "720"
 
 
-def test_artifact_items_only_returns_existing_paths(tmp_path) -> None:
+def test_artifact_items_only_returns_existing_non_log_paths(tmp_path) -> None:
     timeline = tmp_path / "timeline.json"
     timeline.write_text("{}")
+    log = tmp_path / "run.log"
+    log.write_text("debug details")
     result = AVResult(
         tool_name="test.tool",
         timeline_json=timeline,
         overlay_path=tmp_path / "missing.mp4",
+        log_path=log,
     )
 
     assert artifact_items(result) == [("Timeline JSON", timeline)]
@@ -310,11 +502,26 @@ def test_public_sample_falls_back_when_lfs_pointer_is_unpulled(tmp_path, monkeyp
     assert sample.exists()
 
 
+def test_builtin_web_result_json_hides_log_path(tmp_path) -> None:
+    log = tmp_path / "run.log"
+    log.write_text("debug details")
+    html = render_result_details({"tool_name": "test.tool", "log_path": str(log)})
+
+    assert "log_path" not in html
+    assert str(log) not in html
+
+
 def test_builtin_web_artifact_safety_and_listing(tmp_path) -> None:
     artifact = tmp_path / "run" / "timeline.json"
     artifact.parent.mkdir()
     artifact.write_text("{}")
-    result = {"timeline_json": str(artifact), "overlay_path": str(tmp_path / "missing.mp4")}
+    log = tmp_path / "run" / "run.log"
+    log.write_text("debug details")
+    result = {
+        "timeline_json": str(artifact),
+        "overlay_path": str(tmp_path / "missing.mp4"),
+        "log_path": str(log),
+    }
 
     assert server_artifact_items(result) == [("Timeline JSON", artifact)]
     assert is_allowed_path(artifact, tmp_path) is True

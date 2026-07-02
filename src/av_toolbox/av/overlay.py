@@ -119,7 +119,7 @@ def render_sync_overlay(
             span = max(end_t - start_t, 1e-6)
 
             canvas = np.full((height, width, 3), bg, dtype=np.uint8)
-            _text(cv2, canvas, f"av.sync_correspondence | t={t:05.2f}/{duration:.2f}s | window={window_sec:.1f}s", pad, 25, 0.56, text)
+            _text(cv2, canvas, f"AV Sync | t={t:05.2f}/{duration:.2f}s | window={window_sec:.1f}s", pad, 25, 0.56, text)
 
             cap.set(cv2.CAP_PROP_POS_MSEC, max(0.0, t * 1000.0))
             ok, frame = cap.read()
@@ -131,8 +131,8 @@ def render_sync_overlay(
                 cv2.rectangle(canvas, (plot_x0, y0), (plot_x1, y1), axis, 1)
             _text(cv2, canvas, "WAVEFORM", pad, (wave_lane[0] + wave_lane[1]) // 2 + 5, 0.47, dim)
             _text(cv2, canvas, "MOTION", pad, (motion_lane[0] + motion_lane[1]) // 2 + 5, 0.47, motion_color)
-            _text(cv2, canvas, "AUDIO", pad, (audio_lane[0] + audio_lane[1]) // 2 + 5, 0.47, audio_color)
-            _text(cv2, canvas, "SYNC", pad, (sync_lane[0] + sync_lane[1]) // 2 + 5, 0.47, sync_color)
+            _text(cv2, canvas, "AUDIO EVT", pad, (audio_lane[0] + audio_lane[1]) // 2 + 5, 0.47, audio_color)
+            _text(cv2, canvas, "SYNC MATCH", pad, (sync_lane[0] + sync_lane[1]) // 2 + 5, 0.43, sync_color)
 
             for sec in range(math.ceil(start_t), int(math.floor(end_t)) + 1):
                 x = int(round(plot_x0 + (sec - start_t) / span * plot_w))

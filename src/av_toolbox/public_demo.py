@@ -20,7 +20,28 @@ PUBLIC_UPLOAD_SUBDIR = "public_uploads"
 PUBLIC_SAMPLE_SUBDIR = "public_sample"
 PUBLIC_SAMPLE_STEM = "av_toolbox_public_sample"
 LFS_POINTER_PREFIX = b"version https://git-lfs.github.com/spec/v1\n"
-PUBLIC_BASE_WORKFLOW_NAMES = ("AV Sync", "Motion", "Quality", "Shot Boundaries", "Beats")
+PUBLIC_BASE_WORKFLOW_NAMES = (
+    "Motion",
+    "Image Quality",
+    "Blur Exposure",
+    "Shot Boundaries",
+    "Obstruction",
+    "Optical Flow",
+    "Foreground Motion",
+    "Camera Shake",
+    "Object Detection",
+    "Segmentation",
+    "Pose",
+    "Shot Type",
+    "Action Recognition",
+    "ST Action",
+    "Beats",
+    "Audio Energy",
+    "Audio Events",
+    "Music Phase",
+    "Transcription",
+    "AV Sync",
+)
 PUBLIC_DENSEAV_WORKFLOW_NAMES = ("DenseAV",)
 
 

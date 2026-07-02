@@ -10,7 +10,7 @@ from av_toolbox.core.result import AVResult
 
 
 class ToolRegistry:
-    """Map stable tool names such as ``video.blur_exposure`` to tool objects."""
+    """Map stable tool names such as ``video.image_quality`` to tool objects."""
 
     def __init__(self) -> None:
         self._tools: dict[str, BaseTool] = {}

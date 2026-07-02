@@ -61,7 +61,6 @@ ARTIFACT_FIELDS = [
     ("csv_path", "Features CSV"),
     ("report_html", "Report HTML"),
     ("config_path", "Config YAML"),
-    ("log_path", "Run Log"),
 ]
 VIDEO_EXTENSIONS = {".mp4", ".mov", ".mkv", ".webm", ".avi"}
 AUDIO_EXTENSIONS = {".wav", ".mp3", ".flac", ".m4a", ".aac", ".ogg"}
@@ -859,11 +858,13 @@ def render_result_details(result: dict[str, Any]) -> str:
         f'<a href="/artifact?path={quote(str(path))}">{escape(label)}</a>'
         for label, path in artifact_items(result)
     )
+    display_result = dict(result)
+    display_result.pop("log_path", None)
     downloads_html = f'<div class="downloads">{downloads}</div>' if downloads else ""
     return f"""
       {summary}
       {downloads_html}
-      <pre>{escape(json.dumps(result, indent=2))}</pre>
+      <pre>{escape(json.dumps(display_result, indent=2))}</pre>
     """
 
 

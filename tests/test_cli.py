@@ -78,15 +78,14 @@ def test_cli_list_tools_outputs_json(capsys) -> None:
     assert "audio.music_phase" in captured.out
     assert "av.denseav" in captured.out
     assert "av.sync_correspondence" in captured.out
-    assert "video.blur_exposure" in captured.out
+    assert "video.image_quality" in captured.out
     assert "video.motion" in captured.out
-    assert "video.shot_boundary" in captured.out
 
 
-def test_cli_video_blur_exposure_smoke(tmp_path, capsys, demo_video_path: Path) -> None:
+def test_cli_video_image_quality_smoke(tmp_path, capsys, demo_video_path: Path) -> None:
     assert main([
         "video",
-        "blur-exposure",
+        "image-quality",
         str(demo_video_path),
         "--output",
         str(tmp_path),
@@ -99,7 +98,7 @@ def test_cli_video_blur_exposure_smoke(tmp_path, capsys, demo_video_path: Path) 
     ]) == 0
 
     payload = json.loads(capsys.readouterr().out)
-    assert payload["tool_name"] == "video.blur_exposure"
+    assert payload["tool_name"] == "video.image_quality"
     assert Path(payload["timeline_json"]).exists()
 
 
@@ -123,25 +122,24 @@ def test_cli_video_motion_smoke(tmp_path, capsys, demo_video_path: Path) -> None
     assert Path(payload["timeline_json"]).exists()
 
 
-def test_cli_video_shot_boundary_smoke(tmp_path, capsys, demo_video_path: Path) -> None:
+def test_cli_video_cut_detection_smoke(tmp_path, capsys, demo_video_path: Path) -> None:
     assert main([
         "video",
-        "shot-boundary",
+        "cut-detection",
         str(demo_video_path),
         "--output",
         str(tmp_path),
-        "--sample-fps",
-        "4",
         "--max-seconds",
         "1",
+        "--backend",
+        "lightweight",
         "--device",
         "cpu",
     ]) == 0
 
     payload = json.loads(capsys.readouterr().out)
-    assert payload["tool_name"] == "video.shot_boundary"
+    assert payload["tool_name"] == "video.cut_detection"
     assert Path(payload["timeline_json"]).exists()
-
 
 
 def test_cli_audio_beat_detection_smoke(tmp_path, capsys) -> None:

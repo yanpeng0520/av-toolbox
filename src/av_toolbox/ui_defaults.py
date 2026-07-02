@@ -39,19 +39,94 @@ RUN_WORKFLOWS: tuple[dict[str, Any], ...] = (
         "values": {"tool_name": "video.motion"},
     },
     {
-        "name": "Quality",
-        "description": "Blur, dark-frame, and overexposure checks.",
+        "name": "Image Quality",
+        "description": "Sharpness/blur, luma/exposure, contrast, and lens obstruction.",
+        "values": {"tool_name": "video.image_quality"},
+    },
+    {
+        "name": "Blur Exposure",
+        "description": "Per-frame blur, luminance, dark-frame, and overexposure checks.",
         "values": {"tool_name": "video.blur_exposure"},
     },
     {
         "name": "Shot Boundaries",
-        "description": "Shot boundary and scene segment detection.",
-        "values": {"tool_name": "video.shot_boundary"},
+        "description": "TransNetV2 cut and scene segment detection.",
+        "values": {"tool_name": "video.cut_detection", "backend": "transnetv2"},
+    },
+    {
+        "name": "Obstruction",
+        "description": "Bright low-variance obstruction detection.",
+        "values": {"tool_name": "video.obstruction"},
+    },
+    {
+        "name": "Optical Flow",
+        "description": "Dense optical-flow magnitude and mask overlay.",
+        "values": {"tool_name": "video.optical_flow"},
+    },
+    {
+        "name": "Foreground Motion",
+        "description": "Foreground-biased optical-flow motion overlay.",
+        "values": {"tool_name": "video.foreground_motion"},
+    },
+    {
+        "name": "Camera Shake",
+        "description": "Sparse optical-flow translation jitter and shake events.",
+        "values": {"tool_name": "video.camera_shake"},
+    },
+    {
+        "name": "Object Detection",
+        "description": "YOLO object boxes and class confidences.",
+        "values": {"tool_name": "video.object_detection"},
+    },
+    {
+        "name": "Segmentation",
+        "description": "YOLO instance masks, boxes, classes, and confidences.",
+        "values": {"tool_name": "video.segmentation"},
+    },
+    {
+        "name": "Pose",
+        "description": "MediaPipe human pose landmark overlay.",
+        "values": {"tool_name": "video.pose"},
+    },
+    {
+        "name": "Shot Type",
+        "description": "Frame-level shot-type labels and top-k probabilities.",
+        "values": {"tool_name": "video.shot_type"},
+    },
+    {
+        "name": "Action Recognition",
+        "description": "SlowFast/PyTorchVideo action labels over sampled windows.",
+        "values": {"tool_name": "video.action_recognition"},
+    },
+    {
+        "name": "ST Action",
+        "description": "MMAction2 spatio-temporal action recognition when configured.",
+        "values": {"tool_name": "video.st_action"},
     },
     {
         "name": "Beats",
         "description": "Beat, downbeat, and onset timeline overlay.",
         "values": {"tool_name": "audio.beat_detection"},
+    },
+    {
+        "name": "Audio Energy",
+        "description": "RMS, dB energy, spectral centroid, and silence windows.",
+        "values": {"tool_name": "audio.energy"},
+    },
+    {
+        "name": "Audio Events",
+        "description": "Impacts, energy regions, spectral changes, and tonal shifts.",
+        "values": {"tool_name": "audio.event_detection"},
+    },
+    {
+        "name": "Music Phase",
+        "description": "Coarse music phase segmentation.",
+        "values": {"tool_name": "audio.music_phase"},
+    },
+    {
+        "name": "Transcription",
+        "description": "Whisper speech transcription segments.",
+        "values": {"tool_name": "audio.transcription"},
     },
     {
         "name": "AV Sync",
@@ -64,6 +139,91 @@ RUN_WORKFLOWS: tuple[dict[str, Any], ...] = (
         "values": {"tool_name": "av.denseav"},
     },
 )
+
+
+TOOL_CATEGORY_ORDER: tuple[str, ...] = ("video", "audio", "av")
+TOOL_CATEGORY_LABELS: dict[str, str] = {
+    "video": "Video",
+    "audio": "Audio",
+    "av": "Audio-Visual",
+}
+
+
+def workflow_by_tool_name(tool_name: str | None) -> dict[str, Any] | None:
+    if not tool_name:
+        return None
+    for workflow in RUN_WORKFLOWS:
+        if workflow["values"].get("tool_name") == tool_name:
+            return workflow
+    return None
+
+
+def tool_display_name(tool_name: str) -> str:
+    workflow = workflow_by_tool_name(tool_name)
+    return str(workflow["name"]) if workflow else tool_name
+
+
+def tool_description(tool_name: str, fallback: str = "") -> str:
+    workflow = workflow_by_tool_name(tool_name)
+    if workflow:
+        return str(workflow.get("description") or fallback)
+    return fallback
+
+
+def category_label(category: str) -> str:
+    return TOOL_CATEGORY_LABELS.get(category, category.replace("_", " ").title())
+
+
+def category_from_label(label: str) -> str:
+    for category, category_label_value in TOOL_CATEGORY_LABELS.items():
+        if category_label_value == label:
+            return category
+    return label.lower().replace("-", "_").replace(" ", "_")
+
+
+def tool_category(tool_name: str, tools: list[dict[str, str]]) -> str:
+    for tool in tools:
+        if tool.get("name") == tool_name:
+            return str(tool.get("category") or "")
+    return tool_name.split(".", 1)[0] if "." in tool_name else ""
+
+
+def tool_type_labels(tools: list[dict[str, str]]) -> list[str]:
+    categories = {str(tool.get("category") or "") for tool in tools}
+    ordered = [category for category in TOOL_CATEGORY_ORDER if category in categories]
+    ordered.extend(sorted(category for category in categories if category and category not in TOOL_CATEGORY_ORDER))
+    return [category_label(category) for category in ordered]
+
+
+def default_tool_type_label(tool_name: str, tools: list[dict[str, str]]) -> str:
+    category = tool_category(tool_name, tools)
+    labels = tool_type_labels(tools)
+    label = category_label(category)
+    return label if label in labels else labels[0]
+
+
+def tool_names_for_category(tools: list[dict[str, str]], category: str) -> list[str]:
+    available = {
+        str(tool.get("name"))
+        for tool in tools
+        if str(tool.get("category") or "") == category
+    }
+    ordered = [
+        str(workflow["values"]["tool_name"])
+        for workflow in RUN_WORKFLOWS
+        if str(workflow["values"].get("tool_name")) in available
+    ]
+    ordered.extend(sorted(available - set(ordered)))
+    return ordered
+
+
+def tool_name_by_display_name(display_name: str, tool_names: list[str]) -> str:
+    for tool_name in tool_names:
+        if tool_display_name(tool_name) == display_name:
+            return tool_name
+    if display_name in tool_names:
+        return display_name
+    return tool_names[0]
 
 
 PARAMETER_SPECS: dict[str, dict[str, Any]] = {
@@ -83,6 +243,11 @@ PARAMETER_SPECS: dict[str, dict[str, Any]] = {
     "super_dark_threshold": {"label": "Super Dark Threshold", "kind": "float", "step": "1"},
     "overexposed_threshold": {"label": "Overexposed Threshold", "kind": "float", "step": "1"},
     "min_scene_seconds": {"label": "Min Scene Seconds", "kind": "float", "step": "0.1"},
+    "backend": {
+        "label": "Cut Backend",
+        "kind": "choice",
+        "choices": ["transnetv2", "scenedetect", "lightweight", "auto"],
+    },
     "impact_delta": {"label": "Impact Delta", "kind": "float", "step": "0.01"},
     "spectral_delta": {"label": "Spectral Delta", "kind": "float", "step": "0.01"},
     "tonal_delta": {"label": "Tonal Delta", "kind": "float", "step": "0.01"},

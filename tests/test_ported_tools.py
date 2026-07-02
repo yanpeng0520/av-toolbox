@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import inspect
 import json
+import shutil
 import wave
 from pathlib import Path
 
@@ -17,8 +19,8 @@ NEW_TOOL_NAMES = {
     "video.camera_shake",
     "video.cut_detection",
     "video.foreground_motion",
+    "video.image_quality",
     "video.object_detection",
-    "video.obstruction",
     "video.optical_flow",
     "video.pose",
     "video.segmentation",
@@ -85,6 +87,7 @@ def test_audio_energy_creates_declared_artifacts(tmp_path) -> None:
         output_dir=tmp_path / "out",
         sample_rate=22050,
         max_seconds=0.8,
+        export_overlay=False,
         device="cpu",
     )
 
@@ -96,11 +99,31 @@ def test_audio_energy_creates_declared_artifacts(tmp_path) -> None:
     assert Path(result.csv_path).exists()
 
 
-def test_video_obstruction_detects_uniform_bright_frames(tmp_path) -> None:
+@pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="ffmpeg is required for audio-energy overlay muxing")
+def test_audio_energy_creates_overlay(tmp_path) -> None:
+    audio = _write_audio(tmp_path / "tone.wav")
+
+    result = av_toolbox.run_tool(
+        "audio.energy",
+        input_path=audio,
+        output_dir=tmp_path / "out",
+        sample_rate=22050,
+        max_seconds=0.8,
+        overlay_fps=5.0,
+        overlay_width=480,
+        overlay_height=320,
+        device="cpu",
+    )
+
+    assert result.overlay_path is not None
+    assert Path(result.overlay_path).exists()
+
+
+def test_video_image_quality_detects_uniform_bright_frames(tmp_path) -> None:
     video = _write_uniform_video(tmp_path / "uniform.mp4")
 
     result = av_toolbox.run_tool(
-        "video.obstruction",
+        "video.image_quality",
         input_path=video,
         output_dir=tmp_path / "out",
         sample_fps=5,
@@ -109,7 +132,7 @@ def test_video_obstruction_detects_uniform_bright_frames(tmp_path) -> None:
     )
 
     payload = json.loads(Path(result.timeline_json).read_text())
-    assert payload["tool_name"] == "video.obstruction"
+    assert payload["tool_name"] == "video.image_quality"
     assert payload["summary"]["obstructed_count"] > 0
 
 
@@ -148,6 +171,8 @@ def test_video_foreground_motion_runs_without_model_mask(tmp_path) -> None:
     assert payload["tool_name"] == "video.foreground_motion"
     assert payload["summary"]["mask_mode"] == "none"
     assert payload["summary"]["sample_count"] > 0
+    assert result.overlay_path is not None
+    assert Path(result.overlay_path).exists()
 
 
 def test_video_camera_shake_creates_declared_artifacts(tmp_path) -> None:
@@ -165,6 +190,14 @@ def test_video_camera_shake_creates_declared_artifacts(tmp_path) -> None:
     payload = json.loads(Path(result.timeline_json).read_text())
     assert payload["tool_name"] == "video.camera_shake"
     assert payload["summary"]["sample_count"] > 0
+    assert result.overlay_path is not None
+    assert Path(result.overlay_path).exists()
+
+
+def test_video_cut_detection_defaults_to_transnetv2() -> None:
+    signature = inspect.signature(av_toolbox.get_tool("video.cut_detection")._run)
+
+    assert signature.parameters["backend"].default == "transnetv2"
 
 
 def test_video_cut_detection_lightweight_backend_creates_artifacts(tmp_path) -> None:
@@ -184,3 +217,5 @@ def test_video_cut_detection_lightweight_backend_creates_artifacts(tmp_path) -> 
     assert payload["tool_name"] == "video.cut_detection"
     assert payload["summary"]["backend"] == "lightweight"
     assert "segments" in payload
+    assert result.overlay_path is not None
+    assert Path(result.overlay_path).exists()

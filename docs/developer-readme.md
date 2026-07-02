@@ -43,7 +43,7 @@ av-toolbox list-tools
 av-toolbox generate-demo-media --output-dir data_segments --duration 60
 ```
 
-Optional migrated model tools use additional extras, for example `.[transcription]` for Whisper, `.[vision-models]` for YOLO and shot-type classification, `.[pose]` for MediaPipe, `.[action]` for PyTorchVideo action recognition, and `.[cut-detection]` for PySceneDetect support.
+Optional migrated model tools use additional extras, for example `.[transcription]` for Whisper, `.[vision-models]` for YOLO and shot-type classification, `.[pose]` for MediaPipe, `.[action]` for PyTorchVideo action recognition, and `.[cut-detection]` for TransNetV2 and PySceneDetect support.
 
 Requires `ffmpeg` on PATH for video/audio media operations.
 
@@ -52,9 +52,9 @@ The generated MP4 preview is muxed from the WAV source with AAC audio for broad 
 Run the packaged video tools on the default demo clip:
 
 ```bash
-av-toolbox video blur-exposure \
+av-toolbox video image-quality \
   data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
-  --output outputs/demo_blur_exposure \
+  --output outputs/demo_image_quality \
   --sample-fps 5
 
 av-toolbox video motion \
@@ -62,10 +62,10 @@ av-toolbox video motion \
   --output outputs/demo_motion \
   --sample-fps 5
 
-av-toolbox video shot-boundary \
+av-toolbox video cut-detection \
   data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
-  --output outputs/demo_shot_boundary \
-  --sample-fps 5
+  --output outputs/demo_cut_detection \
+  --max-seconds 8
 ```
 
 Run the packaged audio tools on the generated hip-hop demo:

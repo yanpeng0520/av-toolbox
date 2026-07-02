@@ -41,17 +41,15 @@ def build_parser() -> argparse.ArgumentParser:
     video_parser = subcommands.add_parser("video", help="Run video tools.")
     video_subcommands = video_parser.add_subparsers(dest="video_command", required=True)
     _add_tool_command(video_subcommands, "action-recognition", "Run video.action_recognition.")
-    _add_tool_command(video_subcommands, "blur-exposure", "Run video.blur_exposure.")
+    _add_tool_command(video_subcommands, "image-quality", "Run video.image_quality.")
     _add_tool_command(video_subcommands, "camera-shake", "Run video.camera_shake.")
     _add_tool_command(video_subcommands, "cut-detection", "Run video.cut_detection.")
     _add_tool_command(video_subcommands, "foreground-motion", "Run video.foreground_motion.")
     _add_tool_command(video_subcommands, "motion", "Run video.motion.")
     _add_tool_command(video_subcommands, "object-detection", "Run video.object_detection.")
-    _add_tool_command(video_subcommands, "obstruction", "Run video.obstruction.")
     _add_tool_command(video_subcommands, "optical-flow", "Run video.optical_flow.")
     _add_tool_command(video_subcommands, "pose", "Run video.pose.")
     _add_tool_command(video_subcommands, "segmentation", "Run video.segmentation.")
-    _add_tool_command(video_subcommands, "shot-boundary", "Run video.shot_boundary.")
     _add_tool_command(video_subcommands, "shot-type", "Run video.shot_type.")
     _add_tool_command(video_subcommands, "st-action", "Run video.st_action.")
 
@@ -167,17 +165,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "video":
         tool_name = {
             "action-recognition": "video.action_recognition",
-            "blur-exposure": "video.blur_exposure",
+            "image-quality": "video.image_quality",
             "camera-shake": "video.camera_shake",
             "cut-detection": "video.cut_detection",
             "foreground-motion": "video.foreground_motion",
             "motion": "video.motion",
             "object-detection": "video.object_detection",
-            "obstruction": "video.obstruction",
             "optical-flow": "video.optical_flow",
             "pose": "video.pose",
             "segmentation": "video.segmentation",
-            "shot-boundary": "video.shot_boundary",
             "shot-type": "video.shot_type",
             "st-action": "video.st_action",
         }[args.video_command]

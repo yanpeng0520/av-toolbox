@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from av_toolbox.audio.overlay import render_timeline_overlay
 from av_toolbox.core.audio_io import load_audio_samples
 from av_toolbox.core.base_tool import BaseTool, ToolRunContext
 from av_toolbox.core.result import AVResult
@@ -32,6 +33,11 @@ class AudioEnergyTool(BaseTool):
         export_json: bool = True,
         export_csv: bool = True,
         export_report: bool = True,
+        export_overlay: bool = True,
+        overlay_fps: float | None = 15.0,
+        overlay_width: int = 1280,
+        overlay_height: int = 540,
+        window_sec: float | None = 8.0,
         **_: Any,
     ) -> AVResult:
         if input_path is None:
@@ -100,8 +106,13 @@ class AudioEnergyTool(BaseTool):
             "max_seconds": max_seconds,
             "rms_floor_db": rms_floor_db,
             "silence_threshold_db": silence_threshold_db,
+            "export_overlay": export_overlay,
+            "overlay_fps": overlay_fps,
+            "overlay_width": overlay_width,
+            "overlay_height": overlay_height,
+            "window_sec": window_sec,
         }
-        _, result = write_standard_artifacts(
+        artifacts, result = write_standard_artifacts(
             tool_name=self.name,
             input_path=input_path,
             context=context,
@@ -127,6 +138,26 @@ class AudioEnergyTool(BaseTool):
                 f"events={len(events)}",
             ],
         )
+        if export_overlay:
+            high_energy_times = _high_energy_times(rows)
+            silence_times = [float(row["timestamp"]) for row in rows if row["is_silent"]]
+            result.overlay_path = render_timeline_overlay(
+                audio_path=input_path,
+                output_path=artifacts.overlay_path,
+                y=y,
+                sr=sr,
+                duration=metadata.duration,
+                lanes=[
+                    ("ENERGY", high_energy_times, (74, 205, 116)),
+                    ("SILENCE", silence_times, (96, 112, 124)),
+                ],
+                title="audio.energy",
+                workspace=context.workspace,
+                fps=overlay_fps or 15.0,
+                width=overlay_width,
+                height=overlay_height,
+                window_sec=window_sec or 8.0,
+            )
         return result
 
 
@@ -159,3 +190,11 @@ def _summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         "silence_count": sum(1 for row in rows if row["is_silent"]),
     }
+
+
+def _high_energy_times(rows: list[dict[str, Any]]) -> list[float]:
+    if not rows:
+        return []
+    values = sorted(float(row["rms_db"]) for row in rows)
+    threshold = values[int(0.85 * (len(values) - 1))]
+    return [float(row["timestamp"]) for row in rows if float(row["rms_db"]) >= threshold]
