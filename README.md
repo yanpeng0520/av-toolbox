@@ -43,9 +43,9 @@ The overlays below are rendered on demo footage from [this YouTube video](https:
 
 **Object and action understanding**
 
-| [Object Detection](docs/tool-catalog.md#video-object-detection) | [Segmentation](docs/tool-catalog.md#video-segmentation) | [Action Recognition](docs/tool-catalog.md#video-action-recognition) | [Pose Detection](docs/tool-catalog.md#video-pose) |
-| --- | --- | --- | --- |
-| ![Object detection](docs/assets/gallery/video-object-detection.gif) | ![Segmentation](docs/assets/gallery/video-segmentation.gif) | ![Action recognition](docs/assets/gallery/video-action-recognition.gif) | ![Pose detection](docs/assets/gallery/video-pose.gif) |
+| [Segmentation](docs/tool-catalog.md#video-segmentation) | [Action Recognition](docs/tool-catalog.md#video-action-recognition) | [Pose Detection](docs/tool-catalog.md#video-pose) |
+| --- | --- | --- |
+| ![Segmentation](docs/assets/gallery/video-segmentation.gif) | ![Action recognition](docs/assets/gallery/video-action-recognition.gif) | ![Pose detection](docs/assets/gallery/video-pose.gif) |
 
 **Audio tools**
 
