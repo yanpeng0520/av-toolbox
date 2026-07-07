@@ -1,4 +1,4 @@
-# av-toolbox
+# AV Toolbox Demo
 
 [![PyPI version](https://badge.fury.io/py/av-analysis-toolbox.svg)](https://pypi.org/project/av-analysis-toolbox/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/av-analysis-toolbox.svg)](https://pypi.org/project/av-analysis-toolbox/)
@@ -7,7 +7,7 @@
 
 Upload a video, get visual/audio/AV diagnostics with overlay videos.
 
-**Live demo:** [demo.yan-peng.com](https://demo.yan-peng.com) - choose a Video, Audio, or Audio-Visual tool; use the sample clip or upload a short non-sensitive file; then view/download the overlay MP4, metrics, and artifacts.
+**Live demo:** [AV Toolbox Demo](https://demo.yan-peng.com) - choose a Video, Audio, or Audio-Visual tool; use the sample clip or upload a short non-sensitive file; then view/download the overlay MP4, metrics, and artifacts.
 
 `av-toolbox` is an installable audio, video, and audio-visual analysis toolbox with one Python registry, one CLI, and a Streamlit demo UI.
 
@@ -27,37 +27,44 @@ The overlays below are rendered on demo footage from [this YouTube video](https:
 
 | [Cut Detection](docs/tool-catalog.md#video-cut-detection) | [Shot Type](docs/tool-catalog.md#video-shot-type) |
 | --- | --- |
-| ![Cut detection](docs/assets/gallery/video-cut-detection.gif) | ![Shot type](docs/assets/gallery/video-shot-type.gif) |
+| <img src="docs/assets/gallery/video-cut-detection.gif" alt="Cut detection" width="420"> | <img src="docs/assets/gallery/video-shot-type.gif" alt="Shot type" width="420"> |
 
 **Video quality**
 
 | [Image Quality](docs/tool-catalog.md#video-image-quality) | [Camera Shake](docs/tool-catalog.md#video-camera-shake) |
 | --- | --- |
-| ![Image quality](docs/assets/gallery/video-quality.gif) | ![Camera shake](docs/assets/gallery/video-camera-shake.gif) |
+| <img src="docs/assets/gallery/video-quality.gif" alt="Image quality" width="420"> | <img src="docs/assets/gallery/video-camera-shake.gif" alt="Camera shake" width="420"> |
 
 **Motion detection**
 
-| [Motion](docs/tool-catalog.md#video-motion) | [Optical Flow](docs/tool-catalog.md#video-optical-flow) | [Foreground Motion](docs/tool-catalog.md#video-foreground-motion) |
-| --- | --- | --- |
-| ![Motion](docs/assets/gallery/video-motion.gif) | ![Optical flow](docs/assets/gallery/video-optical-flow.gif) | ![Foreground motion](docs/assets/gallery/video-foreground-motion.gif) |
+| [Motion](docs/tool-catalog.md#video-motion) | [Optical Flow](docs/tool-catalog.md#video-optical-flow) |
+| --- | --- |
+| <img src="docs/assets/gallery/video-motion.gif" alt="Motion" width="420"> | <img src="docs/assets/gallery/video-optical-flow.gif" alt="Optical flow" width="420"> |
+| [Foreground Motion](docs/tool-catalog.md#video-foreground-motion) |  |
+| <img src="docs/assets/gallery/video-foreground-motion.gif" alt="Foreground motion" width="420"> |  |
 
 **Object and action understanding**
 
-| [Segmentation](docs/tool-catalog.md#video-segmentation) | [Action Recognition](docs/tool-catalog.md#video-action-recognition) | [Pose Detection](docs/tool-catalog.md#video-pose) |
-| --- | --- | --- |
-| ![Segmentation](docs/assets/gallery/video-segmentation.gif) | ![Action recognition](docs/assets/gallery/video-action-recognition.gif) | ![Pose detection](docs/assets/gallery/video-pose.gif) |
+| [Segmentation](docs/tool-catalog.md#video-segmentation) | [Action Recognition](docs/tool-catalog.md#video-action-recognition) |
+| --- | --- |
+| <img src="docs/assets/gallery/video-segmentation.gif" alt="Segmentation" width="420"> | <img src="docs/assets/gallery/video-action-recognition.gif" alt="Action recognition" width="420"> |
+| [Pose Detection](docs/tool-catalog.md#video-pose) |  |
+| <img src="docs/assets/gallery/video-pose.gif" alt="Pose detection" width="420"> |  |
 
 **Audio tools**
 
-| [Beat Detection](docs/tool-catalog.md#audio-beat-detection) | [Audio Energy](docs/tool-catalog.md#audio-energy) | [Audio Events](docs/tool-catalog.md#audio-event-detection) |
-| --- | --- | --- |
-| ![Beat detection](docs/assets/gallery/audio-beat-detection.gif) | ![Audio energy](docs/assets/gallery/audio-energy.gif) | ![Audio events](docs/assets/gallery/audio-event-detection.gif) |
+| [Beat Detection](docs/tool-catalog.md#audio-beat-detection) | [Audio Energy](docs/tool-catalog.md#audio-energy) |
+| --- | --- |
+| <img src="docs/assets/gallery/audio-beat-detection.gif" alt="Beat detection" width="420"> | <img src="docs/assets/gallery/audio-energy.gif" alt="Audio energy" width="420"> |
+| [Audio Events](docs/tool-catalog.md#audio-event-detection) |  |
+| <img src="docs/assets/gallery/audio-event-detection.gif" alt="Audio events" width="420"> |  |
 
 **Audio-visual foundation model**
 
-| [DenseAV](docs/tool-catalog.md#av-denseav) on CatFu |
-| --- |
-| ![DenseAV on CatFu](docs/assets/gallery/av-denseav.gif) |
+<p>
+  <a href="docs/tool-catalog.md#av-denseav">DenseAV on CatFu</a><br>
+  <img src="docs/assets/gallery/av-denseav.gif" alt="DenseAV on CatFu" width="720">
+</p>
 
 ## Happy Path: Local Install And Demo
 
