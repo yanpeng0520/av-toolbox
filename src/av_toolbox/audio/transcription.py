@@ -7,8 +7,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import numpy as np
-
 from av_toolbox.core.base_tool import BaseTool, ToolRunContext
 from av_toolbox.core.result import AVResult
 from av_toolbox.core.simple_outputs import write_standard_artifacts
@@ -209,9 +207,21 @@ def _resolved_path(value: str) -> Path | None:
         return None
 
 
-def _decode_audio_for_whisper(input_path: Path, *, max_seconds: float | None = None) -> np.ndarray:
+def _import_numpy() -> Any:
+    try:
+        import numpy as np
+    except ImportError as exc:
+        raise ImportError(
+            "audio.transcription requires NumPy through faster-whisper. Install with: "
+            "pip install -e '.[transcription]'"
+        ) from exc
+    return np
+
+
+def _decode_audio_for_whisper(input_path: Path, *, max_seconds: float | None = None) -> Any:
     """Decode media to the 16 kHz mono float32 waveform expected by Whisper."""
     sampling_rate = 16000
+    np = _import_numpy()
     av = _import_pyav()
 
     AudioResampler = _pyav_audio_resampler_class(av)
