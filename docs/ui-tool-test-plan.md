@@ -35,7 +35,7 @@ For each tool:
 
 ## Sample Inputs
 
-- Video or AV tools: `data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4`
+- Video or AV tools: `data_segments/CatFu.mp4`
 - Generated video with audio: `data_segments/synthetic_hiphop_60s.mp4`
 - Generated audio: `data_segments/synthetic_hiphop_60s.wav`
 

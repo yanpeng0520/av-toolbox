@@ -83,7 +83,7 @@ You can use a checkpoint without copying it into the cache:
 
 ```bash
 av-toolbox av denseav \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/denseav_explicit \
   --checkpoint /path/to/denseav_2head.ckpt \
   --model-name sound_and_language \
@@ -117,7 +117,7 @@ expose a checksum flag.
 
 ```bash
 av-toolbox av denseav \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/denseav_cpu_smoke \
   --model-name sound_and_language \
   --max-seconds 2 \
@@ -133,7 +133,7 @@ av-toolbox av denseav \
 
 ```bash
 av-toolbox av denseav \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/denseav_gpu \
   --model-name sound_and_language \
   --max-seconds 8 \

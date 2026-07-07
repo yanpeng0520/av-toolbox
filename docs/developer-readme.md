@@ -44,17 +44,17 @@ Run the packaged video tools on the default demo clip:
 
 ```bash
 av-toolbox video image-quality \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/demo_image_quality \
   --sample-fps 5
 
 av-toolbox video motion \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/demo_motion \
   --sample-fps 5
 
 av-toolbox video cut-detection \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/demo_cut_detection \
   --max-seconds 8
 ```
@@ -79,7 +79,7 @@ Run the packaged audio-visual tools:
 
 ```bash
 av-toolbox av denseav \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/demo_denseav_clever_cat \
   --max-seconds 5 \
   --sample-fps 5 \
@@ -100,7 +100,7 @@ You can also point at an existing local checkpoint without copying it:
 
 ```bash
 av-toolbox av denseav \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/demo_denseav_clever_cat \
   --checkpoint /path/to/denseav_2head.ckpt \
   --max-seconds 5 \
@@ -189,7 +189,7 @@ import av_toolbox
 tools = av_toolbox.list_tools()
 result = av_toolbox.run_tool(
     "video.motion",
-    input_path="data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4",
+    input_path="data_segments/CatFu.mp4",
     output_dir="outputs/python_motion",
     sample_fps=5,
     max_seconds=5,

@@ -3,7 +3,7 @@
 These examples use the packaged registry names and the default Git LFS demo media:
 
 ```text
-data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4
+data_segments/CatFu.mp4
 ```
 
 Run `git lfs pull --include="data_segments/*.mp4"` after cloning if the sample video has not been downloaded yet. Generate the synthetic hip-hop WAV/MP4 demo when you want a longer music input:
@@ -18,7 +18,7 @@ av-toolbox generate-demo-media --output-dir data_segments --duration 60
 from pathlib import Path
 import av_toolbox
 
-media = Path("data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4")
+media = Path("data_segments/CatFu.mp4")
 
 result = av_toolbox.run_tool(
     "video.motion",
@@ -39,7 +39,7 @@ print(result.to_dict())
 from pathlib import Path
 import av_toolbox
 
-media = Path("data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4")
+media = Path("data_segments/CatFu.mp4")
 tools = [
     "video.image_quality",
     "video.motion",
@@ -74,7 +74,7 @@ import av_toolbox
 
 result = av_toolbox.run_tool(
     "av.denseav",
-    input_path="data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4",
+    input_path="data_segments/CatFu.mp4",
     output_dir="outputs/python_denseav",
     model_name="sound_and_language",
     cache_dir="~/.cache/av_toolbox",
@@ -91,7 +91,7 @@ result = av_toolbox.run_tool(
 ## CLI: Generic Registry Batch
 
 ```bash
-MEDIA=data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4
+MEDIA=data_segments/CatFu.mp4
 
 for TOOL in \
   video.image_quality \
@@ -115,19 +115,19 @@ done
 
 ```bash
 av-toolbox video image-quality \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/video_image_quality \
   --sample-fps 5 \
   --max-seconds 10
 
 av-toolbox video motion \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/video_motion \
   --sample-fps 5 \
   --max-seconds 10
 
 av-toolbox video cut-detection \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/video_cuts \
   --max-seconds 10
 ```
@@ -156,7 +156,7 @@ av-toolbox audio music-phase \
 
 ```bash
 av-toolbox av denseav \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/denseav \
   --model-name sound_and_language \
   --max-seconds 5 \
@@ -174,7 +174,7 @@ See `docs/denseav.md` for checkpoint setup before running DenseAV.
 
 ```bash
 av-toolbox run video.motion \
-  data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/motion_json_only \
   --max-seconds 5 \
   --no-csv \
