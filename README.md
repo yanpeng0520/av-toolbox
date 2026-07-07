@@ -74,7 +74,7 @@ python -m pip install -e ".[web,audio,video]"
 av-toolbox generate-demo-media --output-dir data_segments --duration 12
 
 av-toolbox video motion \
-  data_segments/synthetic_hiphop_60s.mp4 \
+  data_segments/CatFu.mp4 \
   --output outputs/motion_demo \
   --sample-fps 5 \
   --max-seconds 8

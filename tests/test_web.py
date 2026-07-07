@@ -358,7 +358,7 @@ def test_ui_defaults_keep_default_media_path_and_latest_output(tmp_path) -> None
 
     assert default_workflow_name() == "Motion"
     assert values["tool_name"] == "video.motion"
-    assert values["media_path"] == "data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4"
+    assert values["media_path"] == "data_segments/CatFu.mp4"
     assert Path(values["output_dir"]).parent == tmp_path
     assert Path(values["output_dir"]).name.startswith("run_")
     assert values["device"] == ""
@@ -369,7 +369,7 @@ def test_ui_resolves_default_media_path_from_other_cwd(tmp_path, monkeypatch) ->
     monkeypatch.chdir(tmp_path)
     path = resolve_existing_input_path(default_form_values(tmp_path)["media_path"])
 
-    assert path.name == "Clever_Cat_Outsmarts_Warrior_square.mp4"
+    assert path.name == "CatFu.mp4"
     assert path.parent.name == "data_segments"
 
 
@@ -420,7 +420,7 @@ def test_builtin_web_page_renders_registered_tools(tmp_path) -> None:
     assert "Motion" in html
     assert "Threshold" in html
     assert 'value="15.0"' in html
-    assert "data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4" in html
+    assert "data_segments/CatFu.mp4" in html
     assert 'class="top-progress"' in html
     assert 'aria-label="Processing video input"' in html
     assert 'document.body.classList.add("is-running")' in html

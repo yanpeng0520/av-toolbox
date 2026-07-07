@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 
-DEFAULT_MEDIA_PATH = "data_segments/Clever_Cat_Outsmarts_Warrior_square.mp4"
+DEFAULT_MEDIA_PATH = "data_segments/CatFu.mp4"
 DEFAULT_OUTPUT_ROOT = "outputs/web_runs"
 DEFAULT_OUTPUT_SUBDIR_PREFIX = "run"
 DEFAULT_TOOL_NAME = "video.motion"
